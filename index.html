@@ -128,75 +128,44 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
 
 /* ══ INBOX TOGGLE STRIP ══ */
 .inbox-strip{
-  width:24px;flex-shrink:0;
-  background:var(--s1);
-  border-right:1px solid var(--border);
-  display:flex;flex-direction:column;align-items:center;
-  justify-content:center;
-  cursor:pointer;position:relative;
-  z-index:8;
-  transition:background .15s;
+  width:24px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;z-index:8;transition:background .15s;
 }
 .inbox-strip:hover{background:var(--s2);}
-/* The pill — floats, offset right so it overlaps the workspace edge slightly */
+.inbox-strip.alerting .strip-pill{border-color:var(--red);animation:pillPulse 1.2s infinite;}
+@keyframes pillPulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.25);}50%{box-shadow:0 0 0 5px rgba(220,38,38,0);}}
 .strip-pill{
   display:flex;flex-direction:column;align-items:center;gap:6px;
-  padding:10px 5px;
-  background:var(--s0);
-  border:1px solid var(--border);
-  border-radius:8px;
-  width:22px;
-  box-shadow:0 2px 8px rgba(0,0,0,.1);
-  transition:all .18s;
-  position:relative;
+  padding:10px 5px;background:var(--s0);border:1px solid var(--border);
+  border-radius:8px;width:22px;box-shadow:0 2px 8px rgba(0,0,0,.1);
+  transition:all .18s;position:relative;
 }
-.inbox-strip:hover .strip-pill{
-  background:var(--accent);
-  border-color:var(--accent);
-  box-shadow:0 4px 12px rgba(0,121,107,.25);
-}
-.inbox-strip.alerting .strip-pill{
-  border-color:var(--red);
-  box-shadow:0 0 0 3px rgba(220,38,38,.15);
-  animation:pillPulse 1.2s infinite;
-}
-@keyframes pillPulse{
-  0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.25);}
-  50%{box-shadow:0 0 0 5px rgba(220,38,38,0);}
-}
-/* chevron arrow */
-.strip-arrow{
-  font-size:8px;color:var(--accent);
-  line-height:1;transition:all .18s;font-weight:900;
-  transform:scaleX(.85);
-}
-.inbox-strip:hover .strip-arrow{color:#fff;transform:scaleX(.85) scale(1.1);}
-/* divider line between arrow and label */
+.inbox-strip:hover .strip-pill{background:var(--accent);border-color:var(--accent);box-shadow:0 4px 12px rgba(0,121,107,.25);}
+.strip-arrow{font-size:8px;color:var(--accent);line-height:1;transition:all .18s;font-weight:900;transform:scaleX(.85);}
+.inbox-strip:hover .strip-arrow{color:#fff;}
 .strip-divider{width:10px;height:1px;background:var(--border);transition:background .18s;}
 .inbox-strip:hover .strip-divider{background:rgba(255,255,255,.35);}
-/* vertical text label */
 .strip-label{
-  writing-mode:vertical-rl;
-  transform:rotate(180deg);
-  font-size:8px;font-weight:700;
-  color:var(--t3);font-family:var(--m);
-  letter-spacing:.04em;user-select:none;
-  transition:color .18s;white-space:nowrap;
+  writing-mode:vertical-rl;transform:rotate(180deg);
+  font-size:8px;font-weight:700;color:var(--t3);font-family:var(--m);
+  letter-spacing:.04em;user-select:none;transition:color .18s;white-space:nowrap;
 }
 .inbox-strip:hover .strip-label{color:#fff;}
-/* unread badge — number only, no names */
 .strip-badge{
-  position:absolute;top:-6px;right:-6px;
-  min-width:16px;height:16px;border-radius:8px;
-  background:var(--red);color:#fff;
-  font-size:8px;font-weight:700;
+  position:absolute;top:-6px;right:-6px;min-width:16px;height:16px;border-radius:8px;
+  background:var(--red);color:#fff;font-size:8px;font-weight:700;
   display:none;align-items:center;justify-content:center;
-  font-family:var(--m);padding:0 3px;
-  border:1.5px solid var(--s1);z-index:5;
+  font-family:var(--m);padding:0 3px;border:1.5px solid var(--s1);z-index:5;
 }
 .strip-badge.show{display:flex;animation:badgePop .35s cubic-bezier(.34,1.56,.64,1);}
-/* strip-names no longer shows name chips — hidden */
 .strip-names{display:none;}
+
+/* ══ STATE 1 SPLIT — conv 35% left + workflow 65% right ══ */
+.wf-pane-area.s1-split{display:flex;flex-direction:row;overflow:hidden;}
+.wf-pane-area.s1-split #s1-conv{width:35%;flex-shrink:0;border-right:1px solid var(--border);display:flex !important;opacity:1 !important;}
+.wf-pane-area.s1-split .s1-wf-pane{flex:1;display:flex !important;opacity:1 !important;}
+.wf-pane-area.s1-split .s1-wf-pane.s1-hidden{display:none !important;}
 
 /* ══ WORKSPACE ══ */
 .workspace{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
@@ -429,49 +398,9 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
   background:transparent;color:var(--t3);
   font-size:11px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  transition:background 0s, border-color 0s, color 0s;
-  flex-shrink:0;margin-left:auto;padding:3px;
-  position:relative;
+  transition:all .13s;flex-shrink:0;margin-left:auto;
 }
 .swap-icon:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
-
-/* instant custom tooltip — appears BELOW icon to avoid overflow:hidden clipping */
-.swap-icon[data-tip]::after{
-  content:attr(data-tip);
-  position:absolute;
-  top:calc(100% + 6px);
-  right:0;
-  background:#1e293b;
-  color:#fff;
-  font-size:10px;
-  font-family:var(--f);
-  font-weight:500;
-  white-space:nowrap;
-  padding:4px 8px;
-  border-radius:5px;
-  pointer-events:none;
-  opacity:0;
-  transition:opacity 0s;
-  box-shadow:0 2px 8px rgba(0,0,0,.2);
-  z-index:9999;
-  letter-spacing:.01em;
-}
-.swap-icon[data-tip]::before{
-  content:'';
-  position:absolute;
-  top:calc(100% + 2px);
-  right:5px;
-  border:4px solid transparent;
-  border-bottom-color:#1e293b;
-  pointer-events:none;
-  opacity:0;
-  transition:opacity 0s;
-  z-index:9999;
-}
-.swap-icon[data-tip]:hover::after,
-.swap-icon[data-tip]:hover::before{
-  opacity:1;
-}
 /* restore button in swapped video pane */
 .swap-btn{
   display:flex;align-items:center;gap:4px;
@@ -802,8 +731,14 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
 /* active button state on rail */
 .ar-btn.ci-active{background:var(--s2);color:var(--accent);}
 
+.swap-icon{border-radius:5px;transition:all .13s;}
+.swap-icon:hover{background:var(--accent);color:#fff;border-color:var(--accent);transform:scale(1.08);}
+/* When state-2 is swapped, the swap icon gets a teal tint to show it's in an alternate layout */
 .swap-icon.swapped{background:rgba(13,148,136,.1);color:var(--teal);border-color:rgba(13,148,136,.3);}
 .swap-icon.swapped:hover{background:var(--teal);color:#fff;border-color:var(--teal);}
+.swap-icon[data-tip]::after{content:attr(data-tip);position:absolute;top:calc(100% + 6px);right:0;background:#1e293b;color:#fff;font-size:10px;font-family:var(--f);font-weight:500;white-space:nowrap;padding:4px 8px;border-radius:5px;pointer-events:none;opacity:0;box-shadow:0 2px 8px rgba(0,0,0,.2);z-index:9999;}
+.swap-icon[data-tip]::before{content:'';position:absolute;top:calc(100% + 2px);right:5px;border:4px solid transparent;border-bottom-color:#1e293b;pointer-events:none;opacity:0;z-index:9999;}
+.swap-icon[data-tip]:hover::after,.swap-icon[data-tip]:hover::before{opacity:1;}
 </style>
 </head>
 <body>
@@ -1104,10 +1039,10 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
               </div>
             </div>
           </div>
-          <div class="wf-pane" id="s1-cobrowse"><div class="ph-pane"><div class="ph-icon">🖥</div><div class="ph-title">Start a Co-browse session</div><div class="ph-sub">Share screen with Sarah Johnson to guide her through the application</div><button style="margin-top:8px;background:var(--accent);border:none;color:#fff;border-radius:7px;padding:8px 20px;font-size:11px;font-family:var(--f);cursor:pointer;font-weight:600">+ Start Co-browse</button></div></div>
-          <div class="wf-pane" id="s1-workflows"><div class="ph-pane"><div class="ph-icon">⚙</div><div class="ph-title">Workflows</div><div class="ph-sub">Manage active workflows for this member</div></div></div>
-          <div class="wf-pane" id="s1-salesforce"><div class="ph-pane"><div class="ph-icon">☁</div><div class="ph-title">Salesforce</div><div class="ph-sub">View and update CRM records</div></div></div>
-          <div class="wf-pane" id="s1-sharing"><div class="ph-pane"><div class="ph-icon">📤</div><div class="ph-title">Content Sharing</div><div class="ph-sub">Send documents and resources to Sarah</div></div></div>
+          <div class="wf-pane s1-wf-pane s1-hidden" id="s1-cobrowse"><div class="ph-pane"><div class="ph-icon">🖥</div><div class="ph-title">Start a Co-browse session</div><div class="ph-sub">Share screen with Sarah Johnson to guide her through the application</div><button style="margin-top:8px;background:var(--accent);border:none;color:#fff;border-radius:7px;padding:8px 20px;font-size:11px;font-family:var(--f);cursor:pointer;font-weight:600">+ Start Co-browse</button></div></div>
+          <div class="wf-pane s1-wf-pane s1-hidden" id="s1-workflows"><div class="ph-pane"><div class="ph-icon">⚙</div><div class="ph-title">Workflows</div><div class="ph-sub">Manage active workflows for this member</div></div></div>
+          <div class="wf-pane s1-wf-pane s1-hidden" id="s1-salesforce"><div class="ph-pane"><div class="ph-icon">☁</div><div class="ph-title">Salesforce</div><div class="ph-sub">View and update CRM records</div></div></div>
+          <div class="wf-pane s1-wf-pane s1-hidden" id="s1-sharing"><div class="ph-pane"><div class="ph-icon">📤</div><div class="ph-title">Content Sharing</div><div class="ph-sub">Send documents and resources to Sarah</div></div></div>
         </div>
       </div>
 
@@ -1348,7 +1283,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
             </div>
           </div>
           <div class="ci-divider"></div>
-          <div class="ci-row"><span class="ci-lbl">Email</span><span class="ci-val">sarahjohnson@yahoo.com</span></div>
+          <div class="ci-row"><span class="ci-lbl">Email</span><span class="ci-val"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="691a081b0801030601071a0607291008010606470a0604">[email&#160;protected]</a></span></div>
           <div class="ci-row"><span class="ci-lbl">Phone</span><span class="ci-val teal">+1 (310) 492-7762</span></div>
           <div class="ci-row"><span class="ci-lbl">Last seen</span><span class="ci-val">Yesterday, 04:29 PM</span></div>
           <div class="ci-row"><span class="ci-lbl">Department</span><span class="ci-val">Lending</span></div>
@@ -1481,7 +1416,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 let currentState = 1;
 let inboxOpen = true;
 let callSecs = 0;
@@ -1507,26 +1442,26 @@ function toggleInbox(){
   }
 }
 
-/* ══ WORKFLOW TABS — only cobrowse/workflows/salesforce/sharing ══ */
+/* ══ WORKFLOW TABS ══ */
 function switchWFTab(tab){
   activeWFTab = tab;
-  // highlight tab
   document.querySelectorAll('.wft').forEach(b => b.classList.remove('on'));
   const tabEl = document.getElementById('wft-'+tab);
   if(tabEl) tabEl.classList.add('on');
 
-  // in state 1: show workflow pane over the full-conv layer
-  // in states 2–4: show workflow pane in right panel, conv drops to left
   if(currentState === 1){
-    setActivePaneInGroup('s1', tab);
-    // when a workflow tab is clicked in state 1, show the right split
-    // conversation stays implicit — just show the workflow pane
+    // Split: conversation 35% left, workflow 65% right
+    const area = document.querySelector('#layer1 .wf-pane-area');
+    area.classList.add('s1-split');
+    document.getElementById('s1-conv').classList.add('on');
+    document.querySelectorAll('.s1-wf-pane').forEach(p => {
+      const active = p.id === 's1-' + tab;
+      p.classList.toggle('s1-hidden', !active);
+      p.classList.toggle('on', active);
+    });
   } else {
-    // states 2–4: workflow goes in right panel
     setActivePaneInGroup('s234', tab);
-    // ensure conv block visible in left (states 3,4 already have it)
     if(currentState === 2){
-      // switching to a workflow tab from state 2: conv moves left, workflow right
       document.getElementById('videoBlock').className = 'video-block vb-half';
       document.getElementById('convBlock').className = 'conv-block';
     }
@@ -1534,9 +1469,15 @@ function switchWFTab(tab){
 }
 
 function clearWFTab(){
-  // no tab selected — back to plain conversation view
   activeWFTab = null;
   document.querySelectorAll('.wft').forEach(b => b.classList.remove('on'));
+  const area = document.querySelector('#layer1 .wf-pane-area');
+  if(area) area.classList.remove('s1-split');
+  document.querySelectorAll('.s1-wf-pane').forEach(p => {
+    p.classList.add('s1-hidden'); p.classList.remove('on');
+  });
+  const s1conv = document.getElementById('s1-conv');
+  if(s1conv) s1conv.classList.add('on');
 }
 
 function setActivePaneInGroup(prefix, key){
@@ -1548,29 +1489,19 @@ function setActivePaneInGroup(prefix, key){
 }
 
 /* ══ STATE MACHINE ══ */
-/* ══ AUTO-COLLAPSE HELPERS ══
-   collapseForSession()  — called when entering any active session (states 2–5)
-                           collapses inbox + sidebar to free up space for workspace
-   restoreForBrowsing()  — called when returning to state 1 (discovery/waiting mode)
-                           re-opens inbox + expands sidebar
-   Manual toggles always override these for the rest of that state visit.
-*/
+/* ══ AUTO-COLLAPSE ══ */
 function collapseForSession(){
   const sb = document.getElementById('sidebar');
   if(sb) sb.classList.remove('expanded');
-
   if(inboxOpen){
     inboxOpen = false;
     document.getElementById('inboxWrap').classList.add('closed');
     document.getElementById('stripArrow').textContent = '▶';
     document.getElementById('stripLabel').textContent = 'Show Inbox';
   }
-  // Brief hint so agent knows panels auto-collapsed
   setTimeout(()=> toast('↔  Nav & inbox collapsed — more space for your session'), 300);
 }
-
 function restoreForBrowsing(){
-  // Re-open inbox
   if(!inboxOpen){
     inboxOpen = true;
     document.getElementById('inboxWrap').classList.remove('closed');
@@ -1579,7 +1510,6 @@ function restoreForBrowsing(){
     document.getElementById('inboxStrip').classList.remove('alerting');
     setTimeout(()=>{ document.getElementById('stripBadge').classList.remove('show'); }, 600);
   }
-  // Expand sidebar
   const sb = document.getElementById('sidebar');
   if(sb) sb.classList.add('expanded');
 }
@@ -1596,14 +1526,14 @@ function goToState(n){
     const cbTab = document.getElementById('wft-cobrowse');
     if(cbTab) cbTab.style.display = '';
     clearWFTab();
-    setActivePaneInGroup('s1','conv');
-    restoreForBrowsing(); // ← back to discovery mode
+    setActivePaneInGroup('s1','conv'); // show plain conv
+    restoreForBrowsing();
     toast('💬  Conversation only — inbox & nav restored');
   }
   else{
     document.getElementById('layer1').classList.remove('active');
     document.getElementById('layer234').classList.add('active');
-    collapseForSession(); // ← entering session: collapse sidebar + inbox
+    collapseForSession();
 
     // Ensure video block is visible for states 2-4 (state 5 hides it)
     if(n !== 5){
@@ -1741,11 +1671,7 @@ setTimeout(()=>{
 function triggerStripAlert(name){
   const strip = document.getElementById('inboxStrip');
   const badge = document.getElementById('stripBadge');
-
-  // pulse the strip pill
   strip.classList.add('alerting');
-
-  // show badge count only — no name chip
   badge.textContent = '1';
   badge.classList.add('show');
 }
@@ -1833,12 +1759,7 @@ function applyState5Layout(){
   // Set left col width
   if(leftCol) leftCol.style.width = state5Swapped ? '65%' : '35%';
 
-  // Right panel: show cobrowse pane
-  document.querySelectorAll('#layer234 .wf-pane').forEach(p => p.classList.remove('on'));
-  document.getElementById('s234-cobrowse').classList.add('on');
-
-  // Update swap icons
-  const convSwapIcon = cb ? cb.querySelector('.swap-icon') : null;
+  // Right panel: show cobrowswap-icon') : null;
   const cbSwapIcon   = document.querySelector('#s234-cobrowse .swap-icon');
 
   [convSwapIcon, cbSwapIcon].forEach(icon => {
@@ -1953,12 +1874,7 @@ function toggleContactInfo(){
   const open  = panel.classList.toggle('open');
   btn.classList.toggle('ci-active', open);
   btn.title = open ? 'Close contact info' : 'Contact info';
-
-  // Opening contact info: collapse sidebar to icons to reclaim space
-  if(open){
-    const sb = document.getElementById('sidebar');
-    if(sb) sb.classList.remove('expanded');
-  }
+  if(open){ const sb=document.getElementById('sidebar'); if(sb) sb.classList.remove('expanded'); }
 }
 
 /* ══ SIDEBAR TOGGLE ══ */
