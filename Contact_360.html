@@ -1,0 +1,2127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eltropy — Agent Console</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f0f2f6;--s0:#fff;--s1:#f7f8fb;--s2:#eef0f5;--s3:#e4e7ef;
+  --border:#dde1ea;--border2:#c5cad6;
+  --accent:#00796B;--as:rgba(0,121,107,.07);
+  --teal:#0d9488;--ts:rgba(13,148,136,.08);
+  --red:#dc2626;--rs:rgba(220,38,38,.08);
+  --amber:#d97706;--ws:rgba(217,119,6,.08);
+  --green:#16a34a;--gs:rgba(22,163,74,.08);
+  --t1:#111827;--t2:#4b5563;--t3:#9ca3af;
+  --f:'DM Sans',system-ui,sans-serif;--m:'DM Mono',monospace;
+  --sh1:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 4px 16px rgba(0,0,0,.09);--sh3:0 14px 40px rgba(0,0,0,.12);
+  --bottom-bar:52px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex-direction:column;font-size:12px;}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes vring{0%,100%{box-shadow:0 0 0 0 rgba(13,148,136,.35)}50%{box-shadow:0 0 0 6px rgba(13,148,136,0)}}
+@keyframes cs{0%,100%{top:30%;left:28%}25%{top:48%;left:55%}55%{top:62%;left:40%}80%{top:35%;left:68%}}
+@keyframes fadein{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes msgpop{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastin{from{opacity:0;transform:translate(-50%,-6px)}to{opacity:1;transform:translate(-50%,0)}}
+/* inbox alert animations */
+@keyframes stripPulse{0%,100%{background:var(--s1)}50%{background:rgba(220,38,38,.1)}}
+@keyframes badgePop{0%{transform:scale(0)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+@keyframes nameSlide{from{opacity:0;max-height:0}to{opacity:1;max-height:40px}}
+
+/* ══ TOPBAR ══ */
+.topbar{height:44px;background:var(--s0);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:8px;flex-shrink:0;box-shadow:var(--sh1);z-index:20;}
+.logo{width:28px;height:28px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;font-family:var(--m);}
+.vd{width:1px;height:20px;background:var(--border);}
+.chip{font-family:var(--m);font-size:11px;display:flex;align-items:center;gap:5px;border-radius:5px;padding:3px 9px;font-weight:500;}
+.chip.amber{color:var(--amber);background:var(--ws);border:1px solid rgba(217,119,6,.2);}
+.chip.green{color:var(--green);background:var(--gs);border:1px solid rgba(22,163,74,.2);}
+.cdot{width:5px;height:5px;border-radius:50%;animation:pulse 1.5s infinite;}
+.cdot.amber{background:var(--amber);}
+.cdot.green{background:var(--green);}
+.qc{font-size:10px;color:var(--t2);background:var(--s1);border:1px solid var(--border);border-radius:5px;padding:3px 9px;display:flex;align-items:center;gap:4px;}
+.qc b{color:var(--accent);font-weight:600;}
+.ml{margin-left:auto;display:flex;align-items:center;gap:6px;}
+.ib{width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--t3);transition:all .12s;font-size:13px;}
+.ib:hover{background:var(--s2);color:var(--t2);}
+
+/* ══ BODY ROW ══ */
+.body{flex:1;display:flex;overflow:hidden;min-height:0;}
+
+/* ══ SIDEBAR NAV ══ */
+.sidebar{
+  width:46px;
+  background:#1e1b4b;
+  display:flex;flex-direction:column;
+  flex-shrink:0;overflow:hidden;
+  transition:width .3s cubic-bezier(.4,0,.2,1);
+  position:relative;z-index:10;
+}
+.sidebar.expanded{ width:220px; }
+.nav-list{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 0;display:flex;flex-direction:column;gap:1px;}
+.nav-list::-webkit-scrollbar{display:none;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:0 7px;height:36px;border-radius:8px;margin:0 5px;
+  cursor:pointer;border:none;background:transparent;
+  color:rgba(255,255,255,.55);font-family:var(--f);font-size:11.5px;font-weight:500;
+  white-space:nowrap;overflow:hidden;text-align:left;
+  transition:background .12s,color .12s;flex-shrink:0;
+}
+.nav-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.8);}
+.nav-item.active{background:rgba(255,255,255,.12);color:#fff;}
+.nav-icon{width:22px;height:22px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:6px;}
+.nav-item.active .nav-icon{background:rgba(255,255,255,.1);}
+.nav-label{flex:1;min-width:0;}
+.nav-badge{min-width:18px;height:18px;border-radius:9px;background:#f97316;color:#fff;font-size:9px;font-weight:700;font-family:var(--m);display:flex;align-items:center;justify-content:center;padding:0 4px;flex-shrink:0;}
+.nav-new{font-size:8px;font-weight:700;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.6);border-radius:4px;padding:1px 5px;flex-shrink:0;}
+.nav-sep{height:1px;background:rgba(255,255,255,.07);margin:6px 12px;}
+.sidebar-foot{padding:8px 0 10px;border-top:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;align-items:center;gap:6px;}
+.nav-help{display:flex;align-items:center;gap:10px;padding:0 7px;height:36px;border-radius:8px;margin:0 5px;cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,.55);font-family:var(--f);font-size:11.5px;white-space:nowrap;overflow:hidden;transition:background .12s;width:calc(100% - 10px);flex-shrink:0;}
+.nav-help:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.8);}
+.sidebar-toggle{width:26px;height:26px;border-radius:50%;background:#2d2a5e;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+.sidebar-toggle:hover{background:rgba(255,255,255,.15);color:#fff;}
+.sidebar-toggle svg{transition:transform .3s cubic-bezier(.4,0,.2,1);}
+.sidebar.expanded .sidebar-toggle svg{transform:rotate(180deg);}
+
+/* ══ INBOX ══ */
+.inbox-wrap{display:flex;flex-shrink:0;overflow:hidden;width:258px;transition:width .32s cubic-bezier(.4,0,.2,1);}
+.inbox-wrap.closed{width:0;}
+.inbox{width:258px;background:var(--s0);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100%;flex-shrink:0;}
+.ih{padding:10px 12px 8px;border-bottom:1px solid var(--border);}
+.ih-title{font-weight:600;font-size:13px;margin-bottom:8px;}
+.isearch{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:11px;font-family:var(--f);color:var(--t1);outline:none;}
+.isearch:focus{border-color:var(--accent);background:var(--s0);}
+.iseg{display:flex;background:var(--s2);border-radius:6px;padding:2px;margin:8px 12px 0;border:1px solid var(--border);}
+.st{flex:1;text-align:center;padding:4px;border-radius:4px;font-size:10px;color:var(--t3);cursor:pointer;font-weight:500;transition:all .12s;}
+.st.on{background:var(--s0);color:var(--t1);box-shadow:var(--sh1);}
+.isec{padding:5px 12px 4px;font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;margin-top:8px;}
+.iscnt{font-family:var(--m);color:var(--accent);font-size:9px;}
+.ilist{flex:1;overflow-y:auto;}
+.ilist::-webkit-scrollbar{width:3px;}
+.ilist::-webkit-scrollbar-thumb{background:var(--border2);}
+.ii{padding:9px 12px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;display:flex;gap:9px;}
+.ii:hover{background:var(--s1);}
+.ii.sel{background:var(--as);border-left:2.5px solid var(--accent);padding-left:9.5px;}
+.ii.live{background:rgba(13,148,136,.05);}
+.iava{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:var(--m);flex-shrink:0;position:relative;}
+.ibody{flex:1;min-width:0;}
+.itop{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;}
+.iname{font-size:11px;font-weight:500;color:var(--t2);}
+.iname.b{font-weight:700;color:var(--t1);}
+.itime{font-size:9px;color:var(--t3);font-family:var(--m);}
+.irow2{display:flex;align-items:center;justify-content:space-between;gap:4px;}
+.iprev{font-size:10px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;}
+.itag{font-size:8px;font-weight:600;padding:1px 6px;border-radius:4px;font-family:var(--m);}
+.tm{background:var(--as);color:var(--accent);}
+.tl{background:var(--ts);color:var(--teal);}
+.ibadge{position:absolute;top:-3px;right:-3px;min-width:15px;height:15px;border-radius:8px;background:var(--red);font-size:7px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;border:2px solid var(--s0);padding:0 3px;font-family:var(--m);}
+.lpill{font-size:8px;font-weight:600;color:var(--teal);font-family:var(--m);display:flex;align-items:center;gap:3px;}
+.lpill::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--teal);animation:pulse 1.5s infinite;}
+.ppill{font-size:8px;font-weight:600;color:var(--amber);font-family:var(--m);}
+
+/* ══ INBOX TOGGLE STRIP ══ */
+.inbox-strip{
+  width:24px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;z-index:8;transition:background .15s;
+}
+.inbox-strip:hover{background:var(--s2);}
+.inbox-strip.alerting .strip-pill{border-color:var(--red);animation:pillPulse 1.2s infinite;}
+@keyframes pillPulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.25);}50%{box-shadow:0 0 0 5px rgba(220,38,38,0);}}
+.strip-pill{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:10px 5px;background:var(--s0);border:1px solid var(--border);
+  border-radius:8px;width:22px;box-shadow:0 2px 8px rgba(0,0,0,.1);
+  transition:all .18s;position:relative;
+}
+.inbox-strip:hover .strip-pill{background:var(--accent);border-color:var(--accent);box-shadow:0 4px 12px rgba(0,121,107,.25);}
+.strip-arrow{font-size:8px;color:var(--accent);line-height:1;transition:all .18s;font-weight:900;transform:scaleX(.85);}
+.inbox-strip:hover .strip-arrow{color:#fff;}
+.strip-divider{width:10px;height:1px;background:var(--border);transition:background .18s;}
+.inbox-strip:hover .strip-divider{background:rgba(255,255,255,.35);}
+.strip-label{
+  writing-mode:vertical-rl;transform:rotate(180deg);
+  font-size:8px;font-weight:700;color:var(--t3);font-family:var(--m);
+  letter-spacing:.04em;user-select:none;transition:color .18s;white-space:nowrap;
+}
+.inbox-strip:hover .strip-label{color:#fff;}
+.strip-badge{
+  position:absolute;top:-6px;right:-6px;min-width:16px;height:16px;border-radius:8px;
+  background:var(--red);color:#fff;font-size:8px;font-weight:700;
+  display:none;align-items:center;justify-content:center;
+  font-family:var(--m);padding:0 3px;border:1.5px solid var(--s1);z-index:5;
+}
+.strip-badge.show{display:flex;animation:badgePop .35s cubic-bezier(.34,1.56,.64,1);}
+.strip-names{display:none;}
+
+/* ══ STATE 1 SPLIT — conv 35% left + workflow 65% right ══ */
+/* ══ STATE 1 SPLIT — conv 35% left + workflow 65% right ══ */
+.wf-pane-area.s1-split{display:flex;flex-direction:row;overflow:hidden;}
+.wf-pane-area.s1-split #s1-conv{width:35%;flex:0 0 35%;border-right:1px solid var(--border);display:flex !important;opacity:1 !important;}
+.wf-pane-area.s1-split .s1-wf-pane{flex:1;display:flex !important;opacity:1 !important;}
+.wf-pane-area.s1-split .s1-wf-pane.s1-hidden{display:none !important;}
+
+/* ══ WORKSPACE ══ */
+.workspace{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+
+/* ══ CONTENT ROW — wraps main-area + right action rail ══ */
+.content-row{flex:1;display:flex;overflow:hidden;min-height:0;}
+
+/* ══ RIGHT ACTION RAIL — matches left .rail exactly ══ */
+.action-rail{
+  width:46px;flex-shrink:0;
+  background:var(--s0);
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  align-items:center;
+  padding:10px 0;
+  gap:2px;
+}
+.ar-btn{
+  width:32px;height:32px;border-radius:7px;
+  border:none;background:transparent;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--t3);
+  transition:all .12s;
+  flex-shrink:0;
+}
+.ar-btn:hover{background:var(--s2);color:var(--t2);}
+.ar-btn.danger:hover{background:var(--rs);color:var(--red);}
+.ar-btn svg{pointer-events:none;}
+.ar-sep{width:24px;height:1px;background:var(--border);margin:4px 0;}
+
+/* MEMBER HEADER */
+.member-bar{background:var(--s0);border-bottom:1px solid var(--border);flex-shrink:0;box-shadow:var(--sh1);}
+.mb-top{height:46px;display:flex;align-items:center;padding:0 16px;gap:10px;}
+.mb-ava{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#00796B,#0d9488);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:var(--m);flex-shrink:0;}
+.mb-info{flex:1;}
+.mb-name{font-weight:600;font-size:13px;}
+.mb-sub{font-size:10px;color:var(--t3);}
+.mb-r{display:flex;align-items:center;gap:6px;}
+.agch{display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:10px;font-weight:500;cursor:pointer;color:var(--t2);height:28px;}
+.agav{width:18px;height:18px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;font-family:var(--m);}
+.cmpbtn{background:var(--accent);border:none;color:#fff;border-radius:6px;padding:0 14px;font-size:11px;font-family:var(--f);cursor:pointer;font-weight:600;height:28px;}
+.cmpbtn:hover{background:#005f56;}
+
+/* ── WORKFLOW TABS (always below member header) ── */
+.wf-tabs{height:38px;display:flex;align-items:stretch;padding:0 14px;gap:2px;border-bottom:1px solid var(--border);background:var(--s0);overflow-x:auto;flex-shrink:0;}
+.wf-tabs::-webkit-scrollbar{display:none;}
+.wft{display:flex;align-items:center;gap:5px;padding:0 13px;font-size:11px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2.5px solid transparent;transition:all .12s;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--f);}
+.wft:hover{color:var(--t2);}
+.wft.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
+.wft-dot{width:5px;height:5px;border-radius:50%;background:var(--teal);animation:pulse 1.5s infinite;display:none;}
+.wft.on .wft-dot{display:block;}
+
+/* ══ MAIN AREA ══ */
+.main-area{flex:1;display:flex;overflow:hidden;position:relative;}
+
+/* STATE LAYERS */
+.state-layer{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;opacity:0;pointer-events:none;transition:opacity .3s;z-index:1;}
+.state-layer.active{opacity:1;pointer-events:all;z-index:2;}
+
+/* ── STATE 1: full conversation ── */
+/* ── SPLIT VIEW (states 2,3,4) ── */
+.split-view{flex:1;display:flex;overflow:hidden;}
+.left-col{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);background:var(--s0);flex-shrink:0;width:35%;min-width:190px;transition:width .42s cubic-bezier(.4,0,.2,1);}
+
+/* VIDEO BLOCK */
+.video-block{display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;transition:flex-basis .45s cubic-bezier(.4,0,.2,1);position:relative;}
+.video-block.vb-full{flex-basis:100%;}
+.video-block.vb-half{flex-basis:50%;}
+.vs-head{height:32px;padding:0 10px;display:flex;align-items:center;gap:6px;flex-shrink:0;background:var(--s1);border-bottom:1px solid var(--border);overflow:visible;}
+.vs-lbl{font-size:9px;font-weight:700;color:var(--t2);font-family:var(--m);letter-spacing:.06em;display:flex;align-items:center;gap:5px;flex:1;}
+.vl-dot{width:5px;height:5px;border-radius:50%;background:var(--teal);animation:pulse 1.5s infinite;}
+.vs-timer{font-family:var(--m);font-size:10px;color:var(--amber);font-weight:500;}
+.vgw{flex:1;padding:6px;display:grid;gap:5px;overflow:hidden;background:var(--bg);}
+.vgw.g2{grid-template-columns:1fr 1fr;grid-template-rows:1fr .62fr;}
+.vt{border-radius:7px;background:#141b2d;border:1.5px solid #243058;position:relative;overflow:hidden;min-height:0;}
+.vt.verified{border-color:var(--teal);}
+.vt.self{opacity:.86;}
+.vt.span2{grid-column:1/-1;}
+.vtbg{position:absolute;inset:0;background:linear-gradient(150deg,#1b2540,#0e1320);}
+.vt.verified .vtbg{background:linear-gradient(150deg,#091e1e,#050f0f);}
+.vt.sup .vtbg{background:linear-gradient(150deg,#190f30,#0f0920);}
+.vtg{position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.74)100%);}
+.vti{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:rgba(255,255,255,.05);font-family:var(--m);}
+.vtb{position:absolute;top:5px;left:5px;font-size:7px;font-weight:600;padding:2px 5px;border-radius:3px;font-family:var(--m);color:#fff;}
+.vtb.v{background:rgba(13,148,136,.9);}
+.vtb.y{left:auto;right:5px;background:rgba(0,121,107,.85);}
+.vtb.s{background:rgba(124,58,237,.85);}
+.vtbot{position:absolute;bottom:0;left:0;right:0;padding:4px 6px;display:flex;align-items:center;justify-content:space-between;}
+.vtn{font-size:8px;font-weight:600;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;}
+.vtis{display:flex;gap:2px;}
+.vi{width:13px;height:13px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:7px;}
+.vi.on{background:rgba(0,121,107,.75);}
+.vi.off{background:rgba(220,38,38,.75);}
+.vi.ok{background:rgba(13,148,136,.75);}
+.vring{position:absolute;inset:-2px;border-radius:8px;border:2px solid var(--teal);animation:vring 2s infinite;pointer-events:none;}
+.vpc{padding:7px 8px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0;background:var(--s0);}
+.vc{width:27px;height:27px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-size:11px;}
+.vc:hover{transform:scale(1.1);}
+.vc.rec{background:var(--rs);color:var(--red);border:1px solid rgba(220,38,38,.2);}
+.vc.mic{background:var(--s2);color:var(--t2);border:1px solid var(--border);}
+.vc.mic.muted{background:var(--rs);color:var(--red);}
+.vc.cam,.vc.hold{background:var(--s2);color:var(--t2);border:1px solid var(--border);}
+.vc.ai{background:var(--as);color:var(--accent);border:1px solid rgba(0,121,107,.2);}
+.vc.end{background:var(--red);color:#fff;border:none;}
+
+/* CONV BLOCK in left col */
+.conv-block{flex:1;display:flex;flex-direction:column;overflow:hidden;border-top:1px solid var(--border);min-height:0;transition:max-height .45s cubic-bezier(.4,0,.2,1),opacity .3s;position:relative;}
+.conv-block.cb-hidden{max-height:0;overflow:hidden;opacity:0;border-top:none;}
+
+.conv-head{height:32px;padding:0 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--s1);border-bottom:1px solid var(--border);overflow:visible;}
+.conv-lbl{font-size:9px;font-weight:700;color:var(--t2);font-family:var(--m);letter-spacing:.06em;}
+
+/* MESSAGES */
+.msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:10px;background:var(--bg);}
+.msgs.lg{padding:18px 22px;gap:11px;}
+.msgs::-webkit-scrollbar{width:3px;}
+.msgs::-webkit-scrollbar-thumb{background:var(--border2);}
+.sys{text-align:center;font-size:9px;color:var(--t3);padding:2px 0;}
+.sys span{background:var(--s0);border:1px solid var(--border);padding:2px 10px;border-radius:20px;box-shadow:var(--sh1);}
+.mb{display:flex;gap:6px;align-items:flex-end;}
+.mb.ag{flex-direction:row-reverse;}
+.mav{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;flex-shrink:0;color:#fff;font-family:var(--m);overflow:hidden;}
+.mav.lg{width:28px;height:28px;font-size:9px;border-radius:6px;}
+.mav img{width:100%;height:100%;object-fit:cover;display:block;}
+.mbody{max-width:82%;}
+.mt{padding:7px 10px;border-radius:9px;font-size:10.5px;line-height:1.55;}
+.mt.lg{padding:10px 14px;font-size:12px;}
+.mb.ag .mt{background:#5C5685;color:#fff;border-bottom-right-radius:2px;}
+.mb.mem .mt{background:var(--s0);border:1px solid var(--border);border-bottom-left-radius:2px;color:var(--t1);box-shadow:var(--sh1);}
+.mm{font-size:8.5px;color:var(--t3);margin-top:2px;font-family:var(--m);}
+.mb.ag .mm{text-align:right;}
+
+/* COMPOSE */
+.compose{padding:8px 10px;border-top:1px solid var(--border);background:var(--s0);flex-shrink:0;}
+.compose.lg{padding:12px 18px;}
+.c-actions{display:flex;gap:5px;margin-bottom:7px;flex-wrap:wrap;}
+.ca{padding:4px 10px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--t2);font-size:10px;cursor:pointer;font-family:var(--f);font-weight:500;transition:all .12s;}
+.ca:hover{background:var(--s2);}
+.crow{display:flex;gap:5px;align-items:flex-end;}
+.cinput{flex:1;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:6px 9px;font-size:10.5px;font-family:var(--f);color:var(--t1);outline:none;resize:none;min-height:32px;transition:all .15s;}
+.cinput.lg{font-size:12px;padding:9px 12px;min-height:40px;border-radius:8px;}
+.cinput:focus{border-color:var(--accent);background:var(--s0);box-shadow:0 0 0 3px var(--as);}
+.csend{width:30px;height:30px;border-radius:6px;background:var(--accent);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+.csend.lg{width:38px;height:38px;font-size:14px;border-radius:8px;}
+.csend:hover{background:#005f56;}
+
+/* RIGHT PANEL */
+.right-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
+.wf-pane-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.wf-pane{display:none;flex:1;flex-direction:column;overflow:hidden;animation:fadein .22s ease;}
+.wf-pane.on{display:flex;}
+
+/* CO-BROWSE */
+.cb-inner{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+.cb-subhead{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0;background:var(--s0);overflow:visible;}
+.cb-lbl{font-size:11px;font-weight:600;color:var(--t1);flex:1;display:flex;align-items:center;gap:6px;}
+.cb-ldot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 1.5s infinite;}
+.css-sw{display:flex;gap:4px;}
+.css-b{padding:3px 9px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--s0);color:var(--t3);font-family:var(--m);transition:all .12s;}
+.css-b.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.css-b.paused{border-color:rgba(217,119,6,.3);color:var(--amber);background:var(--ws);}
+.cbscr{flex:1;background:#dde3ef;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.cbmock{width:91%;height:90%;background:#fff;border-radius:8px;box-shadow:var(--sh3);overflow:hidden;position:relative;border:1px solid var(--border);}
+.cbbar{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:var(--s0);border:1px solid var(--border);border-radius:7px;padding:6px 14px;display:flex;align-items:center;gap:10px;z-index:10;box-shadow:var(--sh2);white-space:nowrap;}
+.cblive{font-size:10px;color:var(--teal);font-weight:600;font-family:var(--m);display:flex;align-items:center;gap:4px;}
+.cbldot{width:5px;height:5px;border-radius:50%;background:var(--teal);animation:pulse 1.5s infinite;}
+.cburl{font-size:10px;color:var(--t3);font-family:var(--m);}
+.cbstop{background:var(--rs);border:1px solid rgba(220,38,38,.2);color:var(--red);border-radius:4px;padding:3px 9px;font-size:9px;cursor:pointer;font-family:var(--m);font-weight:600;}
+.cbov{position:absolute;inset:0;background:rgba(238,241,248,.93);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:5;backdrop-filter:blur(5px);}
+.cbovt{font-size:13px;font-weight:600;}
+.cbovs{font-size:10px;color:var(--t3);}
+.cbres{background:var(--accent);border:none;color:#fff;border-radius:7px;padding:7px 18px;font-size:11px;font-family:var(--f);cursor:pointer;font-weight:600;}
+.bc{background:#f3f4f6;padding:7px;border-bottom:1px solid #e5e7eb;display:flex;gap:5px;align-items:center;}
+.bds{display:flex;gap:3px;}
+.bd{width:9px;height:9px;border-radius:50%;}
+.bu{flex:1;background:#fff;border:1px solid #e5e7eb;border-radius:4px;padding:3px 8px;font-size:10px;color:#6b7280;}
+.bb{padding:14px;display:flex;flex-direction:column;gap:10px;}
+.br{height:10px;background:#e5e7eb;border-radius:3px;}
+.br.h{height:20px;width:50%;background:#d1d5db;}
+.br.m{width:65%;}.br.s{width:35%;}
+.bcard{background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px;}
+.cur-s{position:absolute;width:12px;height:12px;border-radius:50%;background:rgba(0,121,107,.85);border:2px solid #fff;pointer-events:none;animation:cs 5s infinite;box-shadow:0 0 0 3px rgba(0,121,107,.2);z-index:10;}
+
+/* PLACEHOLDER PANES */
+.ph-pane{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--t3);background:var(--bg);}
+.ph-icon{font-size:48px;opacity:.25;}
+.ph-title{font-size:13px;font-weight:600;color:var(--t2);}
+.ph-sub{font-size:11px;}
+
+/* RIGHT RAIL */
+.rrail{width:40px;background:var(--s0);border-left:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:2px;flex-shrink:0;}
+
+/* ══ BOTTOM SCENARIO BAR (fixed, full width, never overlaps UI) ══ */
+.scenario-bar{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  height:var(--bottom-bar);
+  background:var(--t1);
+  border-top:1px solid rgba(255,255,255,.07);
+  display:flex;
+  align-items:center;
+  padding:0 16px;
+  gap:8px;
+  flex-shrink:0;
+  z-index:100;
+}
+.sc-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.35);font-family:var(--m);letter-spacing:.1em;margin-right:4px;white-space:nowrap;}
+.sc-btn{
+  display:flex;align-items:center;gap:7px;
+  padding:6px 14px;border-radius:8px;
+  border:1.5px solid rgba(255,255,255,.1);
+  background:transparent;
+  font-size:11px;font-weight:500;
+  color:rgba(255,255,255,.5);
+  cursor:pointer;font-family:var(--f);
+  transition:all .15s;white-space:nowrap;
+}
+.sc-btn:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.8);}
+.sc-btn.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+.sc-num{width:18px;height:18px;border-radius:5px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:var(--m);flex-shrink:0;}
+.sc-btn.on .sc-num{background:rgba(255,255,255,.22);}
+.sc-sep{width:1px;height:20px;background:rgba(255,255,255,.08);}
+
+/* ══ PANEL SWAP ICON — top-right of each panel header ══ */
+.panel-draggable{position:relative;}
+.swap-icon{
+  width:20px;height:20px;
+  border-radius:4px;border:1px solid var(--border);
+  background:transparent;color:var(--t3);
+  font-size:11px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .13s;flex-shrink:0;margin-left:auto;
+}
+.swap-icon:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+/* restore button in swapped video pane */
+.swap-btn{
+  display:flex;align-items:center;gap:4px;
+  padding:4px 10px;border-radius:6px;
+  border:1px solid var(--border);background:var(--s1);
+  color:var(--t2);font-size:10px;font-weight:500;
+  cursor:pointer;font-family:var(--f);transition:all .13s;
+}
+.swap-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* ══ MINI COMPOSER ══ */
+.mini-composer{
+  border-top:1px solid var(--border);
+  background:var(--s0);
+  flex-shrink:0;
+  padding:6px 8px;
+}
+.mini-row{
+  display:flex;align-items:center;gap:5px;
+}
+.mini-plus{
+  width:24px;height:24px;border-radius:6px;
+  border:1px solid var(--border);background:var(--s1);
+  color:var(--t2);font-size:15px;font-weight:400;line-height:1;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .13s;font-family:var(--f);
+}
+.mini-plus:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+.mini-plus.open{background:var(--accent);color:#fff;border-color:var(--accent);transform:rotate(45deg);}
+.mini-input{
+  flex:1;border:1px solid var(--border);border-radius:6px;
+  background:var(--s2);padding:5px 8px;
+  font-size:11px;font-family:var(--f);color:var(--t1);
+  outline:none;resize:none;line-height:1.45;
+  min-height:28px;max-height:72px;overflow-y:auto;
+  transition:border-color .13s,background .13s;
+}
+.mini-input:focus{border-color:var(--accent);background:var(--s0);}
+.mini-send{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--teal);border:none;color:#fff;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .14s;
+  box-shadow:0 1px 4px rgba(13,148,136,.3);
+}
+.mini-send:hover{background:#0f766e;transform:scale(1.07);}
+/* Expanded tray */
+.mini-tray{
+  display:none;align-items:center;gap:2px;
+  padding-top:6px;flex-wrap:wrap;
+}
+.mini-tray.open{display:flex;animation:fadein .15s ease;}
+
+/* ══ VIDEO MODE COMPOSER ══ */
+.vc-composer{
+  border-top:1px solid var(--border);
+  background:var(--s0);
+  flex-shrink:0;
+}
+.active-ch{font-weight:600;}
+.vc-info{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 16px;
+  font-size:11px;color:var(--t2);
+  border-bottom:1px solid var(--border);
+  background:var(--s0);
+}
+.vc-actions{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px 12px;
+}
+
+/* ══ RICH COMPOSER ══ */
+.rich-composer{
+  border-top:1px solid var(--border);
+  background:var(--s0);
+  flex-shrink:0;
+  border-radius:0 0 0 0;
+}
+/* Row 1 — channel switcher */
+.rc-channels{
+  display:flex;align-items:center;gap:0;
+  padding:8px 14px;
+  border-bottom:1px solid var(--border);
+  gap:2px;
+}
+.rc-ch{
+  display:flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:6px;
+  border:none;background:transparent;
+  font-size:11px;font-weight:500;color:var(--t3);
+  cursor:pointer;font-family:var(--f);
+  transition:all .12s;
+}
+.rc-ch:hover{background:var(--s2);color:var(--t2);}
+.rc-ch.active{color:var(--t1);font-weight:600;}
+.rc-ch.teal{color:var(--teal);}
+.rc-ch-divider{width:1px;height:18px;background:var(--border);margin:0 4px;flex-shrink:0;}
+/* Row 2 — formatting */
+.rc-format{
+  display:flex;align-items:center;
+  padding:6px 14px;
+  border-bottom:1px solid var(--border);
+  gap:2px;
+}
+.rc-fmt{
+  width:26px;height:26px;border-radius:5px;
+  border:none;background:transparent;
+  color:var(--t2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;font-family:var(--f);
+  transition:all .12s;
+}
+.rc-fmt:hover{background:var(--s2);}
+/* Row 3 — input */
+.rc-input-wrap{
+  position:relative;
+  padding:10px 14px 6px;
+}
+.rc-input{
+  width:100%;
+  background:transparent;border:none;outline:none;
+  font-size:11.5px;font-family:var(--f);color:var(--t1);
+  resize:none;line-height:1.6;
+  min-height:52px;
+}
+.rc-input::placeholder{color:var(--t3);}
+.rc-expand{
+  position:absolute;top:10px;right:14px;
+  width:20px;height:20px;border-radius:4px;
+  border:1px solid var(--border);background:var(--s1);
+  color:var(--t3);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .12s;
+}
+.rc-expand:hover{background:var(--s2);color:var(--t2);}
+/* Row 4 — actions */
+.rc-actions{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 14px 9px;
+  border-top:1px solid var(--border);
+}
+.rc-act-left{display:flex;align-items:center;gap:1px;flex-wrap:wrap;}
+.rc-act{
+  width:28px;height:28px;border-radius:5px;
+  border:none;background:transparent;
+  color:var(--t2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .12s;flex-shrink:0;
+}
+.rc-act:hover{background:var(--s2);}
+.rc-act-highlight{background:#fef08a !important;color:#854d0e !important;border-radius:5px;}
+.rc-act-highlight:hover{background:#fde047 !important;}
+.rc-act-sep{width:1px;height:18px;background:var(--border);margin:0 5px;flex-shrink:0;}
+.rc-transfer{
+  display:flex;align-items:center;gap:5px;
+  padding:5px 13px;border-radius:7px;
+  border:1.5px solid var(--border);
+  background:var(--s0);
+  color:var(--t2);font-size:11px;font-weight:500;
+  cursor:pointer;font-family:var(--f);
+  transition:all .13s;white-space:nowrap;
+}
+.rc-transfer:hover{border-color:var(--border2);background:var(--s1);}
+.rc-send{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--teal);border:none;
+  color:#fff;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .15s;
+  box-shadow:0 2px 8px rgba(13,148,136,.35);
+}
+.rc-send:hover{background:#0f766e;transform:scale(1.06);}
+
+/* TOAST */
+.toast{position:fixed;top:54px;left:50%;transform:translateX(-50%);background:rgba(17,24,39,.92);color:#fff;border-radius:10px;padding:8px 18px;font-size:11px;font-weight:500;z-index:200;font-family:var(--f);box-shadow:var(--sh3);opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;backdrop-filter:blur(8px);}
+.toast.show{opacity:1;animation:toastin .2s ease;}
+
+/* ══ IMPROVED STATE TRANSITIONS ══ */
+@keyframes panelIn{from{opacity:.3;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes panelSwap{0%{opacity:.5;transform:scale(.984)}100%{opacity:1;transform:scale(1)}}
+@keyframes speakPulse{0%,100%{box-shadow:0 0 0 0 rgba(13,148,136,0)}50%{box-shadow:0 0 0 4px rgba(13,148,136,.45)}}
+.state-layer{transform:translateY(10px);transition:opacity .32s cubic-bezier(.4,0,.2,1),transform .32s cubic-bezier(.4,0,.2,1);}
+.state-layer.active{transform:translateY(0);}
+.panel-swap-anim{animation:panelSwap .26s cubic-bezier(.4,0,.2,1);}
+.pane-in{animation:panelIn .22s cubic-bezier(.4,0,.2,1);}
+
+/* ══ RESIZE HANDLE ══ */
+.resize-handle{
+  width:5px;flex-shrink:0;background:transparent;cursor:col-resize;
+  position:relative;transition:background .15s;z-index:3;
+  display:flex;align-items:center;justify-content:center;
+}
+.resize-handle:hover,.resize-handle.dragging{background:rgba(0,121,107,.12);}
+.resize-handle::after{
+  content:'';position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:2px;height:40px;background:var(--border2);border-radius:2px;
+  transition:background .15s,height .15s;
+}
+.resize-handle:hover::after,.resize-handle.dragging::after{
+  background:var(--accent);height:56px;
+}
+
+/* ══ VIDEO TILE IMPROVEMENTS ══ */
+.vt{cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .15s;}
+.vt:hover:not(.self){border-color:rgba(255,255,255,.22);transform:scale(1.005);}
+.vt.tile-focused{border-color:var(--teal) !important;box-shadow:0 0 0 2px rgba(13,148,136,.28);}
+.vt.speaking{animation:speakPulse 1.4s infinite;border-color:var(--teal) !important;}
+/* Richer tile gradient & name label */
+.vtbg{position:absolute;inset:0;background:linear-gradient(160deg,#1a2540 0%,#0d1322 60%,#060d1a 100%);}
+.vt.verified .vtbg{background:linear-gradient(160deg,#071c1c 0%,#041212 60%,#020a0a 100%);}
+.vt.sup .vtbg{background:linear-gradient(160deg,#170e2e 0%,#0e0820 60%,#070412 100%);}
+/* Better avatar initials */
+.vti{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:700;color:rgba(255,255,255,.06);font-family:var(--m);
+  letter-spacing:-.02em;}
+
+/* ══ LEFT COL — no right border (resize handle provides the gap) ══ */
+.left-col{border-right:none !important;}
+
+/* ══ VC INPUT ROW (right panel, state 2 conversation) ══ */
+.vc-input-row{
+  display:flex;align-items:flex-end;gap:6px;
+  padding:8px 14px 10px;border-top:1px solid var(--border);
+  background:var(--s0);flex-shrink:0;
+}
+.vc-input{
+  flex:1;background:var(--s2);border:1px solid var(--border);
+  border-radius:7px;padding:7px 11px;font-size:11px;
+  font-family:var(--f);color:var(--t1);outline:none;resize:none;
+  min-height:34px;max-height:70px;overflow-y:auto;
+  line-height:1.5;transition:border-color .13s,background .13s;
+}
+.vc-input:focus{border-color:var(--accent);background:var(--s0);box-shadow:0 0 0 3px var(--as);}
+.vc-input::placeholder{color:var(--t3);}
+.vc-send-btn{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--teal);border:none;color:#fff;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .14s;
+  box-shadow:0 2px 8px rgba(13,148,136,.3);
+}
+.vc-send-btn:hover{background:#0f766e;transform:scale(1.07);}
+
+/* ══ RIGHT PANEL — subtle left border ══ */
+.right-panel{border-left:1px solid var(--border);}
+
+/* ══ SCENARIO BAR — active button polish ══ */
+.sc-btn{transition:all .15s;}
+.sc-btn:active{transform:scale(.97);}
+
+/* ══ PANEL HEADER POLISH ══ */
+.vs-head{background:linear-gradient(90deg,rgba(13,148,136,.06),transparent);}
+.conv-head{background:linear-gradient(90deg,rgba(0,121,107,.04),transparent);}
+.vs-lbl{font-size:9.5px;letter-spacing:.08em;}
+.conv-lbl{font-size:9.5px;letter-spacing:.08em;}
+
+/* ══ CONTACT INFO PANEL ══ */
+.ci-panel{
+  width:0;flex-shrink:0;overflow:hidden;
+  background:var(--s0);
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  transition:width .3s cubic-bezier(.4,0,.2,1);
+}
+.ci-panel.open{ width:260px; }
+.ci-inner{width:260px;display:flex;flex-direction:column;height:100%;overflow-y:auto;overflow-x:hidden;}
+.ci-inner::-webkit-scrollbar{width:3px;}
+.ci-inner::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* header */
+.ci-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 14px 10px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.ci-title{font-size:12px;font-weight:700;color:var(--t1);}
+.ci-close{width:22px;height:22px;border-radius:5px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--t3);font-size:14px;transition:background .12s;}
+.ci-close:hover{background:var(--s2);color:var(--t2);}
+
+/* profile card */
+.ci-card{margin:10px 10px 0;background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:12px;flex-shrink:0;}
+.ci-profile{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.ci-ava{width:36px;height:36px;border-radius:50%;background:#E07A5F;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;font-family:var(--m);flex-shrink:0;}
+.ci-pname{font-size:12.5px;font-weight:700;color:var(--t1);margin-bottom:4px;}
+.ci-dnc{display:inline-flex;align-items:center;font-size:9px;font-weight:600;font-family:var(--m);color:var(--t2);background:var(--s0);border:1px solid var(--border2);border-radius:5px;padding:2px 8px;cursor:pointer;transition:all .12s;}
+.ci-dnc:hover{border-color:var(--accent);color:var(--accent);}
+.ci-divider{height:1px;background:var(--border);margin:8px 0;}
+.ci-row{display:flex;gap:8px;padding:3px 0;font-size:10.5px;}
+.ci-lbl{width:72px;color:var(--t3);flex-shrink:0;}
+.ci-val{color:var(--t1);font-weight:500;flex:1;}
+.ci-val.teal{color:var(--accent);font-weight:600;}
+
+/* sections */
+.ci-section{margin:10px 10px 0;background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:12px;flex-shrink:0;}
+.ci-sec-title{font-size:11.5px;font-weight:700;color:var(--t1);margin-bottom:10px;}
+.ci-opt-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;font-size:11px;color:var(--t1);}
+.ci-opt-row + .ci-opt-row{border-top:1px solid var(--border);}
+.ci-opt-lbl{display:flex;align-items:center;gap:5px;color:var(--t2);font-size:10.5px;}
+.ci-info-ico{width:13px;height:13px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:7px;color:var(--t3);cursor:help;}
+
+/* toggle switch */
+.ci-toggle{position:relative;width:34px;height:18px;flex-shrink:0;}
+.ci-toggle input{opacity:0;width:0;height:0;position:absolute;}
+.ci-toggle-track{
+  position:absolute;inset:0;border-radius:9px;
+  background:var(--border2);cursor:pointer;transition:background .2s;
+}
+.ci-toggle input:checked + .ci-toggle-track{background:var(--accent);}
+.ci-toggle-track::after{
+  content:'';position:absolute;
+  width:12px;height:12px;border-radius:50%;
+  background:#fff;top:3px;left:3px;
+  transition:transform .2s;
+  box-shadow:0 1px 2px rgba(0,0,0,.2);
+}
+.ci-toggle input:checked + .ci-toggle-track::after{transform:translateX(16px);}
+
+/* pagination */
+.ci-page{display:flex;align-items:center;justify-content:space-between;padding:8px 0 2px;font-size:9.5px;color:var(--t3);}
+.ci-page-btns{display:flex;align-items:center;gap:3px;}
+.ci-pg{width:18px;height:18px;border-radius:4px;border:1px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--t2);font-family:var(--m);}
+.ci-pg.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+.ci-pg:hover:not(.on){background:var(--s2);}
+
+/* active button state on rail */
+.ar-btn.ci-active{background:var(--s2);color:var(--accent);}
+
+.swap-icon{border-radius:5px;transition:all .13s;}
+.swap-icon:hover{background:var(--accent);color:#fff;border-color:var(--accent);transform:scale(1.08);}
+/* When state-2 is swapped, the swap icon gets a teal tint to show it's in an alternate layout */
+.swap-icon.swapped{background:rgba(13,148,136,.1);color:var(--teal);border-color:rgba(13,148,136,.3);}
+.swap-icon.swapped:hover{background:var(--teal);color:#fff;border-color:var(--teal);}
+.swap-icon[data-tip]::after{content:attr(data-tip);position:absolute;top:calc(100% + 6px);right:0;background:#1e293b;color:#fff;font-size:10px;font-family:var(--f);font-weight:500;white-space:nowrap;padding:4px 8px;border-radius:5px;pointer-events:none;opacity:0;box-shadow:0 2px 8px rgba(0,0,0,.2);z-index:9999;}
+.swap-icon[data-tip]::before{content:'';position:absolute;top:calc(100% + 2px);right:5px;border:4px solid transparent;border-bottom-color:#1e293b;pointer-events:none;opacity:0;z-index:9999;}
+.swap-icon[data-tip]:hover::after,.swap-icon[data-tip]:hover::before{opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- MAIN CONTENT (full height minus scenario bar) -->
+<div style="display:flex;flex-direction:column;height:calc(100vh - var(--bottom-bar));overflow:hidden;">
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">E</div><div class="vd"></div>
+  <div class="chip amber"><div class="cdot amber"></div>AHT 00:06:42</div>
+  <div class="qc">Accounts <b>3</b> 💬2 🎥1</div>
+  <div class="qc">Auto Loans <b>3</b></div>
+  <div class="qc">Customer Care <b>3</b></div>
+  <div class="ml"><div class="chip green"><div class="cdot green"></div>Available</div><div class="ib">⚙</div><div class="ib">👤</div></div>
+</div>
+
+<div class="body">
+
+  <!-- SIDEBAR NAV -->
+  <div class="sidebar" id="sidebar">
+    <div class="nav-list">
+
+      <button class="nav-item active" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+        <span class="nav-label">Conversations</span>
+        <span class="nav-badge">12</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg></span>
+        <span class="nav-label">Live</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+        <span class="nav-label">Appointments</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
+        <span class="nav-label">AI Assistant</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><circle cx="18" cy="8" r="3" fill="none"/><path d="M20.5 6l1 1-3 3"/></svg></span>
+        <span class="nav-label">Reputation Mgmt</span>
+        <span class="nav-badge">12</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="8" height="14" rx="1"/><rect x="9" y="3" width="6" height="18" rx="1"/><rect x="16" y="10" width="6" height="11" rx="1"/></svg></span>
+        <span class="nav-label">AI Management</span>
+      </button>
+
+      <div class="nav-sep"></div>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg></span>
+        <span class="nav-label">Modules</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg></span>
+        <span class="nav-label">Insights</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+        <span class="nav-label">Reports</span>
+        <span class="nav-new">New</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
+        <span class="nav-label">Submissions</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+        <span class="nav-label">Activity</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 4v16"/></svg></span>
+        <span class="nav-label">Campaigns</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>
+        <span class="nav-label">Collateral Map</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="6.5" y1="7.8" x2="11" y2="16.2"/><line x1="17.5" y1="7.8" x2="13" y2="16.2"/></svg></span>
+        <span class="nav-label">Flows</span>
+      </button>
+
+    </div>
+
+    <div class="sidebar-foot">
+      <button class="nav-help">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+        <span class="nav-label">Help &amp; Support</span>
+        <span class="nav-badge">12</span>
+      </button>
+      <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Expand nav">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- INBOX -->
+  <div class="inbox-wrap" id="inboxWrap">
+    <div class="inbox">
+      <div class="ih">
+        <div class="ih-title">Inbox</div>
+        <input class="isearch" placeholder="🔍  Search conversations…">
+      </div>
+      <div class="iseg"><div class="st on">Inbox</div><div class="st">Departments</div></div>
+      <div class="isec">Chats <span class="iscnt">23</span></div>
+      <div class="ilist">
+        <div class="ii sel live">
+          <div class="iava" style="background:#E07A5F">SJ</div>
+          <div class="ibody"><div class="itop"><span class="iname" style="color:var(--t1);font-weight:600">Sarah Johnson</span><span class="itime">5m</span></div><div class="irow2"><span class="iprev">Reviewing loan application</span><span class="lpill">LIVE</span></div></div>
+        </div>
+        <div class="ii">
+          <div class="iava" style="background:#E6A817;position:relative">DL<div class="ibadge">12</div></div>
+          <div class="ibody"><div class="itop"><span class="iname">Dario Lessing</span><span class="itime">5m</span></div><div class="irow2"><span class="iprev">Okay, thanks!</span><span class="itag tm">MORT</span></div></div>
+        </div>
+        <div class="ii" id="ii-richard">
+          <div class="iava" style="background:#6C8EBF" id="rw-ava">RW</div>
+          <div class="ibody"><div class="itop"><span class="iname" id="rw-n">Richard Walters</span><span class="itime" id="rw-t">5m</span></div><div class="irow2"><span class="iprev" id="rw-p">Okay, thanks!</span><span class="itag tl">LEND</span></div></div>
+        </div>
+        <div class="ii live">
+          <div class="iava" style="background:#9B6FCA;position:relative">TA<div class="ibadge">3</div></div>
+          <div class="ibody"><div class="itop"><span class="iname">Thomas Anderson</span><span class="itime">2m</span></div><div class="irow2"><span class="iprev">Co-browse paused</span><span class="ppill">PAUSED</span></div></div>
+        </div>
+        <div class="ii">
+          <div class="iava" style="background:#4AADA8">EO</div>
+          <div class="ibody"><div class="itop"><span class="iname">Emma Olivers</span><span class="itime">5m</span></div><div class="irow2"><span class="iprev">Okay, thanks!</span><span class="itag tm">MORT</span></div></div>
+        </div>
+      </div>
+      <div class="isec" style="margin-top:0">Texts <span class="iscnt">23</span></div>
+    </div>
+  </div>
+
+  <!-- INBOX TOGGLE STRIP -->
+  <div class="inbox-strip" id="inboxStrip" onclick="toggleInbox()">
+    <div class="strip-pill" id="stripPill">
+      <div class="strip-badge" id="stripBadge">1</div>
+      <div class="strip-arrow" id="stripArrow">◀</div>
+      <div class="strip-divider"></div>
+      <div class="strip-label" id="stripLabel">Hide Inbox</div>
+    </div>
+    <div class="strip-names" id="stripNames"></div>
+  </div>
+
+  <!-- WORKSPACE -->
+  <div class="workspace">
+
+    <!-- MEMBER HEADER + WORKFLOW TABS -->
+    <div class="member-bar">
+      <div class="mb-top">
+        <div class="mb-info">
+          <div class="mb-name">Sarah Johnson</div>
+          <div class="mb-sub" id="mbSub">+1 (123) 456 78 90</div>
+        </div>
+        <div class="mb-r">
+          <div class="agch"><div class="agav">AR</div>Andrew Raynold ▾</div>
+          <button class="cmpbtn">✓ Complete</button>
+          <div class="ib">☰</div>
+        </div>
+      </div>
+      <!-- WORKFLOW TABS -->
+      <div class="wf-tabs" id="global-wf-tabs">
+        <button class="wft on" id="wft-contact360" onclick="switchWFTab('contact360')">👤 Contact 360</button>
+        <button class="wft" id="wft-cobrowse" onclick="switchWFTab('cobrowse')"><span class="wft-dot"></span>🖥 Co-browse</button>
+        <button class="wft" id="wft-workflows" onclick="switchWFTab('workflows')">⚙ Workflows</button>
+        <button class="wft" id="wft-salesforce" onclick="switchWFTab('salesforce')">☁ Salesforce</button>
+        <button class="wft" id="wft-sharing" onclick="switchWFTab('sharing')">📤 Content Sharing</button>
+      </div>
+    </div>
+
+    <!-- CONTENT ROW: main area + right action rail -->
+    <div class="content-row">
+
+    <!-- MAIN AREA: state layers -->
+    <div class="main-area">
+
+      <!-- ═══ STATE 1: Conversation only ═══ -->
+      <div class="state-layer" id="layer1">
+        <div class="wf-pane-area">
+          <div class="wf-pane on" id="s1-conv">
+            <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--s0);">
+              <div class="msgs lg" id="s1Msgs">
+                <div class="sys"><span>📅 Today, November 25th</span></div>
+                <div class="mb ag"><div class="mav lg" style="background:#7DA3F3;border-radius:50%;">AR</div><div class="mbody"><div class="mt lg">Hello Sarah! How can I help you today?</div><div class="mm">10:00 AM</div></div></div>
+                <div class="mb mem"><div class="mav lg" style="background:#E07A5F;border-radius:50%;">SJ</div><div class="mbody"><div class="mt lg">Hi! I'm trying to check on my loan application status. I submitted it two weeks ago.</div><div class="mm">10:01 AM</div></div></div>
+                <div class="mb ag"><div class="mav lg" style="background:#7DA3F3;border-radius:50%;">AR</div><div class="mbody"><div class="mt lg">Of course, let me pull that up. Could you confirm your date of birth?</div><div class="mm">10:02 AM</div></div></div>
+                <div class="mb mem"><div class="mav lg" style="background:#E07A5F;border-radius:50%;">SJ</div><div class="mbody"><div class="mt lg">Sure — March 14, 1985.</div><div class="mm">10:03 AM</div></div></div>
+                <div class="mb ag"><div class="mav lg" style="background:#7DA3F3;border-radius:50%;">AR</div><div class="mbody"><div class="mt lg">Got it! I can see your application. Would you like to start a video call?</div><div class="mm">10:04 AM</div></div></div>
+                <div class="mb mem"><div class="mav lg" style="background:#E07A5F;border-radius:50%;">SJ</div><div class="mbody"><div class="mt lg">Yes, that would be really helpful!</div><div class="mm">10:04 AM</div></div></div>
+              </div>
+              <!-- RICH COMPOSER -->
+              <div class="rich-composer">
+                <!-- Row 1: Channel switcher -->
+                <div class="rc-channels">
+                  <button class="rc-ch active" title="Chat" onclick="setChannel(this)">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  </button>
+                  <div class="rc-ch-divider"></div>
+                  <button class="rc-ch teal" title="Text SMS" onclick="setChannel(this)">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4a2 2 0 00-2 2v18l4-4h14a2 2 0 002-2V4a2 2 0 00-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+                    <span>Text SMS</span>
+                  </button>
+                  <div class="rc-ch-divider"></div>
+                  <button class="rc-ch" title="Flag">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                  </button>
+                  <div class="rc-ch-divider"></div>
+                  <button class="rc-ch" title="Voice Call">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z" transform="rotate(45 12 12)"/></svg>
+                  </button>
+                  <div class="rc-ch-divider"></div>
+                  <button class="rc-ch" title="Video Call">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                  </button>
+                </div>
+                <!-- Row 2: Formatting toolbar -->
+                <div class="rc-format">
+                  <button class="rc-fmt" title="Bold"><b>B</b></button>
+                  <div class="rc-ch-divider"></div>
+                  <button class="rc-fmt" title="Bullet list">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>
+                  </button>
+                  <button class="rc-fmt" title="Numbered list">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4" stroke="currentColor" stroke-width="1.5"/><path d="M4 10h2" stroke="currentColor" stroke-width="1.5"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" stroke="currentColor" stroke-width="1.5"/></svg>
+                  </button>
+                  <div class="rc-ch-divider"></div>
+                  <button class="rc-fmt" title="Image">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  </button>
+                  <button class="rc-fmt" title="AI assist" style="color:var(--accent)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+                  </button>
+                </div>
+                <!-- Row 3: Input -->
+                <div class="rc-input-wrap">
+                  <textarea class="rc-input" id="s1Input" placeholder="Type your message | Tip: Press enter to send the message or shift + enter to add a new line | Max 1000 characters" rows="3"></textarea>
+                  <button class="rc-expand" title="Expand">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                  </button>
+                </div>
+                <!-- Row 4: Actions + Transfer + Send -->
+                <div class="rc-actions">
+                  <div class="rc-act-left">
+                    <button class="rc-act" title="Canned responses">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </button>
+                    <button class="rc-act" title="Settings">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                    </button>
+                    <div class="rc-act-sep"></div>
+                    <button class="rc-act" title="Signature">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </button>
+                    <button class="rc-act" title="Download">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    </button>
+                    <button class="rc-act" title="Attach">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+                    </button>
+                    <button class="rc-act rc-act-highlight" title="Highlight / Canned">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.707 5.826l-3.535-3.533a1 1 0 00-1.414 0L3.415 14.630 2 20.97l6.337-1.412 12.370-12.319a1 1 0 000-1.413z"/></svg>
+                    </button>
+                    <button class="rc-act" title="Canned message">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                    </button>
+                    <button class="rc-act" title="Favorite">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    </button>
+                    <button class="rc-act" title="Priority">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    </button>
+                    <button class="rc-act" title="Contact">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </button>
+                    <div class="rc-act-sep"></div>
+                    <button class="rc-transfer" onclick="">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+                      Transfer
+                    </button>
+                  </div>
+                  <button class="rc-send" onclick="sendMsg('s1Msgs','s1Input')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22 2L11 13M22 2L15 22 11 13 2 9l20-7z"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="wf-pane s1-wf-pane on" id="s1-contact360">
+            <div style="display:flex;flex-direction:column;width:100%;height:100%;overflow-y:auto;background:var(--s0);">
+
+              <!-- Profile card -->
+              <div style="padding:14px 14px 0;">
+                <div style="background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:14px;">
+                  <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                    <div style="width:40px;height:40px;border-radius:50%;background:#E07A5F;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;font-family:var(--m);flex-shrink:0;">SJ</div>
+                    <div>
+                      <div style="font-size:13px;font-weight:700;color:var(--t1);">Sarah Johnson</div>
+                      <div style="font-size:10px;color:var(--t3);margin-top:2px;">Member since Jan 2019 · Lending dept.</div>
+                    </div>
+                    <div style="margin-left:auto;display:flex;gap:6px;">
+                      <div style="font-size:9px;font-weight:600;background:var(--gs);color:var(--green);border:1px solid rgba(22,163,74,.2);border-radius:5px;padding:3px 8px;">Active</div>
+                      <div style="font-size:9px;font-weight:600;background:var(--as);color:var(--accent);border:1px solid rgba(0,121,107,.2);border-radius:5px;padding:3px 8px;">HELOC ✓</div>
+                    </div>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                    <div style="font-size:10px;"><span style="color:var(--t3);">Email</span><br><span style="color:var(--t1);font-weight:500;">sarahjohnson@yahoo.com</span></div>
+                    <div style="font-size:10px;"><span style="color:var(--t3);">Phone</span><br><span style="color:var(--accent);font-weight:600;">+1 (310) 492-7762</span></div>
+                    <div style="font-size:10px;"><span style="color:var(--t3);">Last seen</span><br><span style="color:var(--t1);font-weight:500;">Yesterday, 4:29 PM</span></div>
+                    <div style="font-size:10px;"><span style="color:var(--t3);">Department</span><br><span style="color:var(--t1);font-weight:500;">Lending</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Interaction summary -->
+              <div style="padding:10px 14px 0;">
+                <div style="font-size:10px;font-weight:700;color:var(--t2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Interaction Summary</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+                  <div style="background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+                    <div style="font-size:18px;font-weight:700;color:var(--accent);">14</div>
+                    <div style="font-size:9px;color:var(--t3);margin-top:2px;">Total interactions</div>
+                  </div>
+                  <div style="background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+                    <div style="font-size:18px;font-weight:700;color:var(--green);">92%</div>
+                    <div style="font-size:9px;color:var(--t3);margin-top:2px;">CSAT score</div>
+                  </div>
+                  <div style="background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+                    <div style="font-size:18px;font-weight:700;color:var(--amber);">3</div>
+                    <div style="font-size:9px;color:var(--t3);margin-top:2px;">Open cases</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recent interactions -->
+              <div style="padding:10px 14px 0;">
+                <div style="font-size:10px;font-weight:700;color:var(--t2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Recent Interactions</div>
+                <div style="display:flex;flex-direction:column;gap:4px;">
+                  <div style="background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:10px;">
+                    <div style="width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;"></div>
+                    <div style="flex:1;min-width:0;">
+                      <div style="font-size:10.5px;font-weight:600;color:var(--t1);">Loan application status</div>
+                      <div style="font-size:9.5px;color:var(--t3);margin-top:1px;">Chat · 5 min ago · AR</div>
+                    </div>
+                    <div style="font-size:9px;color:var(--green);font-weight:600;">Resolved</div>
+                  </div>
+                  <div style="background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:10px;">
+                    <div style="width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0;"></div>
+                    <div style="flex:1;min-width:0;">
+                      <div style="font-size:10.5px;font-weight:600;color:var(--t1);">HELOC document submission</div>
+                      <div style="font-size:9.5px;color:var(--t3);margin-top:1px;">Voice · 2 days ago · TA</div>
+                    </div>
+                    <div style="font-size:9px;color:var(--amber);font-weight:600;">Pending</div>
+                  </div>
+                  <div style="background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:10px;">
+                    <div style="width:6px;height:6px;border-radius:50%;background:var(--border2);flex-shrink:0;"></div>
+                    <div style="flex:1;min-width:0;">
+                      <div style="font-size:10.5px;font-weight:600;color:var(--t1);">Account balance inquiry</div>
+                      <div style="font-size:9.5px;color:var(--t3);margin-top:1px;">SMS · 1 week ago · DL</div>
+                    </div>
+                    <div style="font-size:9px;color:var(--t3);font-weight:600;">Closed</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Notes -->
+              <div style="padding:10px 14px 14px;">
+                <div style="font-size:10px;font-weight:700;color:var(--t2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Agent Notes</div>
+                <div style="background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:10.5px;color:var(--t2);line-height:1.5;">
+                  Member is inquiring about HELOC application progress. Documents submitted Mar 1. Waiting on title search. Follow up by Mar 10. — AR
+                </div>
+              </div>
+
+            </div>
+          </div>
+          <div class="wf-pane s1-wf-pane s1-hidden" id="s1-cobrowse"><div class="ph-pane"><div class="ph-icon">🖥</div><div class="ph-title">Start a Co-browse session</div><div class="ph-sub">Share screen with Sarah Johnson to guide her through the application</div><button style="margin-top:8px;background:var(--accent);border:none;color:#fff;border-radius:7px;padding:8px 20px;font-size:11px;font-family:var(--f);cursor:pointer;font-weight:600">+ Start Co-browse</button></div></div>
+          <div class="wf-pane s1-wf-pane s1-hidden" id="s1-workflows"><div class="ph-pane"><div class="ph-icon">⚙</div><div class="ph-title">Workflows</div><div class="ph-sub">Manage active workflows for this member</div></div></div>
+          <div class="wf-pane s1-wf-pane s1-hidden" id="s1-salesforce"><div class="ph-pane"><div class="ph-icon">☁</div><div class="ph-title">Salesforce</div><div class="ph-sub">View and update CRM records</div></div></div>
+          <div class="wf-pane s1-wf-pane s1-hidden" id="s1-sharing"><div class="ph-pane"><div class="ph-icon">📤</div><div class="ph-title">Content Sharing</div><div class="ph-sub">Send documents and resources to Sarah</div></div></div>
+
+        </div>
+      </div>
+
+      <!-- ═══ STATES 2–4: SPLIT VIEW ═══ -->
+      <div class="state-layer" id="layer234">
+        <div class="split-view">
+
+          <!-- LEFT 35% -->
+          <div class="left-col">
+            <div class="video-block vb-full" id="videoBlock">
+              <div class="vs-head">
+                <div class="vs-lbl"><div class="vl-dot"></div>VIDEO · 3 participants</div>
+                <div class="vs-timer" id="vTimer">00:00:00</div>
+                <button class="swap-icon" onclick="swapPanel('video')" data-tip="Expand video to main view"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+              </div>
+              <div class="vgw g2">
+                <div class="vt verified"><div class="vring"></div><div class="vtbg"></div><div class="vtg"></div><div class="vti">SJ</div><div class="vtb v">VERIF</div><div class="vtbot"><div class="vtn">Sarah Johnson</div><div class="vtis"><div class="vi on">🎤</div><div class="vi ok">📷</div></div></div></div>
+                <div class="vt self"><div class="vtbg"></div><div class="vtg"></div><div class="vti">AR</div><div class="vtb y">YOU</div><div class="vtbot"><div class="vtn">Andrew Raynold</div><div class="vtis"><div class="vi on" id="mv">🎤</div><div class="vi on">📷</div></div></div></div>
+                <div class="vt sup span2"><div class="vtbg"></div><div class="vtg"></div><div class="vti">AW</div><div class="vtb s">SUP</div><div class="vtbot"><div class="vtn">Amanda Wilson · Supervisor</div><div class="vtis"><div class="vi on">🎤</div><div class="vi off">📷</div></div></div></div>
+              </div>
+              <div class="vpc">
+                <button class="vc rec">⏺</button>
+                <button class="vc mic" id="vcm" onclick="toggleMic()">🎤</button>
+                <button class="vc cam">📷</button>
+                <button class="vc ai">✦</button>
+                <button class="vc hold">⏸</button>
+                <button class="vc end">📵</button>
+              </div>
+            </div>
+            <!-- conv block in left — hidden in state 2 -->
+            <div class="conv-block cb-hidden" id="convBlock">
+              <div class="conv-head">
+                <div class="conv-lbl">💬 MESSAGES</div>
+                <button class="swap-icon" onclick="swapPanel('conv')" data-tip="Expand messages to main view"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+              </div>
+              <div class="msgs" id="splitMsgs">
+                <div class="sys"><span>🎥 Video started</span></div>
+                <div class="mb mem"><div class="mav" style="background:#E07A5F;border-radius:50%;">SJ</div><div class="mbody"><div class="mt">Can you see me okay?</div><div class="mm">10:05 AM</div></div></div>
+                <div class="mb ag"><div class="mav" style="background:#7DA3F3;border-radius:50%;">AR</div><div class="mbody"><div class="mt">Yes, clearly! Starting co-browse now.</div><div class="mm">10:05 AM</div></div></div>
+              </div>
+              <!-- MINI COMPOSER: single-line, expandable -->
+              <div class="mini-composer" id="miniComposer">
+                <div class="mini-row">
+                  <button class="mini-plus" id="miniPlus" onclick="toggleMiniExpand()" title="More options">+</button>
+                  <textarea class="mini-input" id="splitInput" placeholder="Message Sarah…" rows="1"
+                    onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg('splitMsgs','splitInput')}"
+                    oninput="autoGrow(this)"></textarea>
+                  <button class="mini-send" onclick="sendMsg('splitMsgs','splitInput')">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M22 2L11 13M22 2L15 22 11 13 2 9l20-7z"/></svg>
+                  </button>
+                </div>
+                <!-- Expanded tray: hidden by default -->
+                <div class="mini-tray" id="miniTray">
+                  <button class="rc-act" title="Attach"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></button>
+                  <button class="rc-act" title="Canned response"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></button>
+                  <button class="rc-act" title="AI assist" style="color:var(--accent)"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></button>
+                  <div class="rc-act-sep"></div>
+                  <button class="rc-transfer" style="font-size:10px;padding:3px 9px">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+                    Transfer
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- co-browse block in left (shown when cobrowse is swapped to left) -->
+            <div class="conv-block cb-hidden" id="cbLeftBlock" style="border-top:1px solid var(--border);">
+              <div class="conv-head">
+                <div class="conv-lbl" style="display:flex;align-items:center;gap:5px;"><span style="width:5px;height:5px;border-radius:50%;background:var(--teal);display:inline-block;animation:pulse 1.5s infinite;"></span>🖥 CO-BROWSE</div>
+                <button class="swap-icon" onclick="swapPanel('cobrowse')" data-tip="Expand co-browse to main view"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+              </div>
+              <!-- mini cobrowse preview -->
+              <div style="flex:1;background:#dde3ef;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+                <div style="width:88%;height:82%;background:#fff;border-radius:6px;border:1px solid var(--border);box-shadow:var(--sh2);overflow:hidden;position:relative;">
+                  <div style="background:#f3f4f6;padding:5px 7px;border-bottom:1px solid #e5e7eb;display:flex;gap:3px;align-items:center;">
+                    <div style="width:7px;height:7px;border-radius:50%;background:#ff5f57"></div>
+                    <div style="width:7px;height:7px;border-radius:50%;background:#febc2e"></div>
+                    <div style="width:7px;height:7px;border-radius:50%;background:#28c840"></div>
+                    <div style="flex:1;background:#fff;border:1px solid #e5e7eb;border-radius:3px;padding:2px 6px;font-size:8px;color:#9ca3af;margin-left:4px;">safe.org/loans/application/tracker</div>
+                  </div>
+                  <div style="padding:8px;display:flex;flex-direction:column;gap:6px;">
+                    <div style="height:8px;background:#e5e7eb;border-radius:2px;width:50%"></div>
+                    <div style="height:6px;background:#e5e7eb;border-radius:2px;width:100%"></div>
+                    <div style="height:6px;background:#e5e7eb;border-radius:2px;width:70%"></div>
+                    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:4px;padding:7px;display:flex;flex-direction:column;gap:5px;">
+                      <div style="height:6px;background:#e5e7eb;border-radius:2px;width:40%"></div>
+                      <div style="height:6px;background:#e5e7eb;border-radius:2px;width:100%"></div>
+                    </div>
+                  </div>
+                  <!-- live cursor dot -->
+                  <div style="position:absolute;width:8px;height:8px;border-radius:50%;background:rgba(0,121,107,.85);border:1.5px solid #fff;top:40%;left:55%;animation:cs 5s infinite;pointer-events:none;"></div>
+                </div>
+                <div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);background:var(--s0);border:1px solid var(--border);border-radius:5px;padding:3px 9px;display:flex;align-items:center;gap:5px;font-size:9px;box-shadow:var(--sh1);white-space:nowrap;">
+                  <span style="width:4px;height:4px;border-radius:50%;background:var(--teal);animation:pulse 1.5s infinite;display:inline-block;"></span>
+                  <span style="color:var(--teal);font-weight:600;font-family:var(--m);">LIVE</span>
+                  <span style="color:var(--t3);font-family:var(--m);">safe.org/loans/…</span>
+                </div>
+              </div>
+            </div>
+          </div><!-- /left-col -->
+
+          <!-- DRAG RESIZE HANDLE -->
+          <div class="resize-handle" id="resizeHandle"></div>
+
+          <div class="right-panel">
+            <div class="wf-pane-area">
+              <!-- Conversation in right (state 2) -->
+              <div class="wf-pane on" id="s234-conv">
+                <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--s0);">
+                  <div style="height:32px;padding:0 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--s1);border-bottom:1px solid var(--border);">
+                    <span style="font-size:9px;font-weight:700;color:var(--t2);font-family:var(--m);letter-spacing:.06em;">💬 MESSAGES</span>
+                    <button class="swap-icon" onclick="swapPanel('conv')" data-tip="Expand messages to main view"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+                  </div>
+                  <div class="msgs lg" id="rightMsgs">
+                    <div class="sys"><span>📅 Today, November 25th</span></div>
+                    <div class="mb ag"><div class="mav lg" style="background:#7DA3F3;border-radius:50%;">AR</div><div class="mbody"><div class="mt lg">Would you like to start a video call?</div><div class="mm">10:04 AM</div></div></div>
+                    <div class="mb mem"><div class="mav lg" style="background:#E07A5F;border-radius:50%;">SJ</div><div class="mbody"><div class="mt lg">Yes, that would be really helpful!</div><div class="mm">10:04 AM</div></div></div>
+                    <div class="sys"><span>🎥 Video call started · Sarah Johnson, Andrew Raynold, Amanda Wilson joined</span></div>
+                    <div class="mb mem"><div class="mav lg" style="background:#E07A5F;border-radius:50%;">SJ</div><div class="mbody"><div class="mt lg">Can you see me okay?</div><div class="mm">10:05 AM</div></div></div>
+                    <div class="mb ag"><div class="mav lg" style="background:#7DA3F3;border-radius:50%;">AR</div><div class="mbody"><div class="mt lg">Yes, clearly! Let me pull up your loan application.</div><div class="mm">10:05 AM</div></div></div>
+                  </div>
+                  <!-- VIDEO MODE COMPOSER -->
+                  <div class="vc-composer">
+                    <!-- Row 1: channel switcher, Video active -->
+                    <div class="rc-channels" style="background:var(--s0);">
+                      <button class="rc-ch" title="Chat">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                      </button>
+                      <div class="rc-ch-divider"></div>
+                      <button class="rc-ch" title="Flag">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                      </button>
+                      <div class="rc-ch-divider"></div>
+                      <button class="rc-ch" title="Voice Call">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z" transform="rotate(45 12 12)"/></svg>
+                      </button>
+                      <div class="rc-ch-divider"></div>
+                      <button class="rc-ch teal active-ch" title="Video — active">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                        <span style="font-weight:600">Video</span>
+                      </button>
+                    </div>
+                    <!-- Row 2: info hint -->
+                    <div class="vc-info">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;color:var(--t3)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      <span>Click text or chat to send messages while on a video call.</span>
+                    </div>
+                    <!-- Row 3: actions -->
+                    <div class="vc-actions">
+                      <button class="rc-act" title="Settings">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                      </button>
+                      <div class="rc-act-sep"></div>
+                      <button class="rc-transfer">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+                        Transfer
+                      </button>
+                      <button class="rc-transfer" style="gap:6px">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                        Add Participant
+                      </button>
+                    </div>
+                    <!-- Row 4: text input (fixed: was missing) -->
+                    <div class="vc-input-row">
+                      <textarea class="vc-input" id="rightInput" placeholder="Type a message to Sarah…" rows="1"
+                        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg('rightMsgs','rightInput')}"
+                        oninput="autoGrow(this)"></textarea>
+                      <button class="vc-send-btn" onclick="sendMsg('rightMsgs','rightInput')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M22 2L11 13M22 2L15 22 11 13 2 9l20-7z"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Co-browse -->
+              <div class="wf-pane" id="s234-contact360">
+                <div style="display:flex;flex-direction:column;width:100%;height:100%;overflow-y:auto;background:var(--s0);">
+                  <div style="padding:14px 14px 0;">
+                    <div style="background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:14px;">
+                      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                        <div style="width:40px;height:40px;border-radius:50%;background:#E07A5F;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;font-family:var(--m);flex-shrink:0;">SJ</div>
+                        <div>
+                          <div style="font-size:13px;font-weight:700;color:var(--t1);">Sarah Johnson</div>
+                          <div style="font-size:10px;color:var(--t3);margin-top:2px;">Member since Jan 2019 · Lending dept.</div>
+                        </div>
+                        <div style="margin-left:auto;display:flex;gap:6px;">
+                          <div style="font-size:9px;font-weight:600;background:var(--gs);color:var(--green);border:1px solid rgba(22,163,74,.2);border-radius:5px;padding:3px 8px;">Active</div>
+                          <div style="font-size:9px;font-weight:600;background:var(--as);color:var(--accent);border:1px solid rgba(0,121,107,.2);border-radius:5px;padding:3px 8px;">HELOC ✓</div>
+                        </div>
+                      </div>
+                      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                        <div style="font-size:10px;"><span style="color:var(--t3);">Email</span><br><span style="color:var(--t1);font-weight:500;">sarahjohnson@yahoo.com</span></div>
+                        <div style="font-size:10px;"><span style="color:var(--t3);">Phone</span><br><span style="color:var(--accent);font-weight:600;">+1 (310) 492-7762</span></div>
+                        <div style="font-size:10px;"><span style="color:var(--t3);">Last seen</span><br><span style="color:var(--t1);font-weight:500;">Yesterday, 4:29 PM</span></div>
+                        <div style="font-size:10px;"><span style="color:var(--t3);">Department</span><br><span style="color:var(--t1);font-weight:500;">Lending</span></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="padding:10px 14px 0;">
+                    <div style="font-size:10px;font-weight:700;color:var(--t2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Interaction Summary</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+                      <div style="background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+                        <div style="font-size:18px;font-weight:700;color:var(--accent);">14</div>
+                        <div style="font-size:9px;color:var(--t3);margin-top:2px;">Total interactions</div>
+                      </div>
+                      <div style="background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+                        <div style="font-size:18px;font-weight:700;color:var(--green);">92%</div>
+                        <div style="font-size:9px;color:var(--t3);margin-top:2px;">CSAT score</div>
+                      </div>
+                      <div style="background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+                        <div style="font-size:18px;font-weight:700;color:var(--amber);">3</div>
+                        <div style="font-size:9px;color:var(--t3);margin-top:2px;">Open cases</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="padding:10px 14px 0;">
+                    <div style="font-size:10px;font-weight:700;color:var(--t2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Recent Interactions</div>
+                    <div style="display:flex;flex-direction:column;gap:4px;">
+                      <div style="background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:10px;">
+                        <div style="width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;"></div>
+                        <div style="flex:1;min-width:0;"><div style="font-size:10.5px;font-weight:600;color:var(--t1);">Loan application status</div><div style="font-size:9.5px;color:var(--t3);margin-top:1px;">Chat · 5 min ago · AR</div></div>
+                        <div style="font-size:9px;color:var(--green);font-weight:600;">Resolved</div>
+                      </div>
+                      <div style="background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:10px;">
+                        <div style="width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0;"></div>
+                        <div style="flex:1;min-width:0;"><div style="font-size:10.5px;font-weight:600;color:var(--t1);">HELOC document submission</div><div style="font-size:9.5px;color:var(--t3);margin-top:1px;">Voice · 2 days ago · TA</div></div>
+                        <div style="font-size:9px;color:var(--amber);font-weight:600;">Pending</div>
+                      </div>
+                      <div style="background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:10px;">
+                        <div style="width:6px;height:6px;border-radius:50%;background:var(--border2);flex-shrink:0;"></div>
+                        <div style="flex:1;min-width:0;"><div style="font-size:10.5px;font-weight:600;color:var(--t1);">Account balance inquiry</div><div style="font-size:9.5px;color:var(--t3);margin-top:1px;">SMS · 1 week ago · DL</div></div>
+                        <div style="font-size:9px;color:var(--t3);font-weight:600;">Closed</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="padding:10px 14px 14px;">
+                    <div style="font-size:10px;font-weight:700;color:var(--t2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Agent Notes</div>
+                    <div style="background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:10.5px;color:var(--t2);line-height:1.5;">Member is inquiring about HELOC application progress. Documents submitted Mar 1. Waiting on title search. Follow up by Mar 10. — AR</div>
+                  </div>
+                </div>
+              </div>
+              <div class="wf-pane" id="s234-cobrowse">
+                <div class="cb-inner">
+                  <div class="cb-subhead">
+                    <div class="cb-lbl"><div class="cb-ldot"></div>Co-browsing with Sarah Johnson</div>
+                    <button class="swap-icon" onclick="swapPanel('cobrowse')" data-tip="Expand co-browse to main view"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+                  </div>
+                  <div class="cbscr">
+                    <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative;" id="cbV-sarah">
+                      <div class="cbbar"><div class="cblive"><div class="cbldot"></div>LIVE</div><div class="cburl">safe.org/loans/application/tracker</div><button class="cbstop">STOP</button></div>
+                      <div class="cbmock">
+                        <div class="bc"><div class="bds"><div class="bd" style="background:#ff5f57"></div><div class="bd" style="background:#febc2e"></div><div class="bd" style="background:#28c840"></div></div><div class="bu">🔒 safe.org/loans/application/tracker</div></div>
+                        <div class="bb"><div class="br h"></div><div class="br" style="width:100%"></div><div class="br m"></div><div class="bcard"><div class="br s"></div><div class="br" style="width:100%"></div><div class="br m"></div></div><div class="br" style="width:100%"></div><div class="bcard"><div class="br m"></div><div class="br" style="width:100%"></div></div></div>
+                      </div>
+                      <!-- cursor OUTSIDE cbmock so overflow:hidden doesn't clip it -->
+                      <div class="cur-s"></div>
+                    </div>
+                    <div style="width:100%;height:100%;display:none;position:relative;" id="cbV-thomas">
+                      <div class="cbov"><div style="font-size:36px">⏸</div><div class="cbovt">Thomas Anderson's session is paused</div><div class="cbovs">safe.org/mortgages/document-checklist</div><button class="cbres">▶ Resume Session</button></div>
+                      <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%"><div class="cbmock" style="filter:blur(2px);opacity:.4"><div class="bc"><div class="bds"><div class="bd" style="background:#ff5f57"></div><div class="bd" style="background:#febc2e"></div><div class="bd" style="background:#28c840"></div></div><div class="bu">🔒 safe.org/mortgages/document-checklist</div></div><div class="bb"><div class="br h"></div><div class="br" style="width:100%"></div><div class="bcard"><div class="br m"></div><div class="br" style="width:100%"></div></div></div></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="wf-pane" id="s234-workflows"><div class="ph-pane"><div class="ph-icon">⚙</div><div class="ph-title">Workflows</div><div class="ph-sub">Manage active workflows</div></div></div>
+              <div class="wf-pane" id="s234-salesforce"><div class="ph-pane"><div class="ph-icon">☁</div><div class="ph-title">Salesforce</div><div class="ph-sub">View and update CRM records</div></div></div>
+              <div class="wf-pane" id="s234-sharing"><div class="ph-pane"><div class="ph-icon">📤</div><div class="ph-title">Content Sharing</div><div class="ph-sub">Send documents and resources</div></div></div>
+              <!-- VIDEO SWAPPED TO RIGHT -->
+              <div class="wf-pane" id="s234-video-swap" style="background:var(--bg);">
+                <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr .55fr;gap:8px;padding:10px;">
+                  <div class="vt verified" style="min-height:120px"><div class="vring"></div><div class="vtbg"></div><div class="vtg"></div><div class="vtb v">VERIF</div><div class="vtbot"><div class="vtn">Sarah Johnson</div><div class="vtis"><div class="vi on">🎤</div><div class="vi ok">📷</div></div></div></div>
+                  <div class="vt self" style="min-height:120px"><div class="vtbg"></div><div class="vtg"></div><div class="vtb y">YOU</div><div class="vtbot"><div class="vtn">Andrew Raynold</div><div class="vtis"><div class="vi on">🎤</div><div class="vi on">📷</div></div></div></div>
+                  <div class="vt sup span2" style="min-height:80px"><div class="vtbg"></div><div class="vtg"></div><div class="vtb s">SUP</div><div class="vtbot"><div class="vtn">Amanda Wilson · Supervisor</div></div></div>
+                </div>
+                <div class="vpc" style="background:var(--s0);">
+                  <button class="vc rec">⏺</button><button class="vc mic">🎤</button><button class="vc cam">📷</button><button class="vc ai">✦</button><button class="vc hold">⏸</button><button class="vc end">📵</button>
+                  <button class="swap-btn" style="margin-left:12px" onclick="resetSlots();applySlots();">⇄ Restore layout</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /main-area -->
+
+    <!-- CONTACT INFO PANEL (slides in from right of main-area) -->
+    <div class="ci-panel" id="ciPanel">
+      <div class="ci-inner">
+
+        <!-- Header -->
+        <div class="ci-head">
+          <span class="ci-title">Contact info</span>
+          <button class="ci-close" onclick="toggleContactInfo()" title="Close">✕</button>
+        </div>
+
+        <!-- Profile card -->
+        <div class="ci-card">
+          <div class="ci-profile">
+            <div class="ci-ava">SJ</div>
+            <div>
+              <div class="ci-pname">Sarah Johnson</div>
+              <button class="ci-dnc">Verify DNC</button>
+            </div>
+          </div>
+          <div class="ci-divider"></div>
+          <div class="ci-row"><span class="ci-lbl">Email</span><span class="ci-val"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="691a081b0801030601071a0607291008010606470a0604">[email&#160;protected]</a></span></div>
+          <div class="ci-row"><span class="ci-lbl">Phone</span><span class="ci-val teal">+1 (310) 492-7762</span></div>
+          <div class="ci-row"><span class="ci-lbl">Last seen</span><span class="ci-val">Yesterday, 04:29 PM</span></div>
+          <div class="ci-row"><span class="ci-lbl">Department</span><span class="ci-val">Lending</span></div>
+        </div>
+
+        <!-- Opt-in status -->
+        <div class="ci-section">
+          <div class="ci-sec-title">Opt-in status</div>
+
+          <div class="ci-opt-row">
+            <span class="ci-opt-lbl" style="color:var(--t1);font-weight:600;font-size:11px;">Global opt-out <span class="ci-info-ico">i</span></span>
+            <label class="ci-toggle"><input type="checkbox"><span class="ci-toggle-track"></span></label>
+          </div>
+
+          <div class="ci-divider"></div>
+
+          <div style="font-size:10.5px;font-weight:600;color:var(--t1);margin-bottom:6px;display:flex;align-items:center;gap:5px;">Department opt-in <span class="ci-info-ico">i</span></div>
+
+          <div class="ci-opt-row">
+            <span class="ci-opt-lbl">Accounts</span>
+            <label class="ci-toggle"><input type="checkbox" checked><span class="ci-toggle-track"></span></label>
+          </div>
+          <div class="ci-opt-row">
+            <span class="ci-opt-lbl">Collections</span>
+            <label class="ci-toggle"><input type="checkbox"><span class="ci-toggle-track"></span></label>
+          </div>
+          <div class="ci-opt-row">
+            <span class="ci-opt-lbl">HELOC</span>
+            <label class="ci-toggle"><input type="checkbox" checked><span class="ci-toggle-track"></span></label>
+          </div>
+          <div class="ci-opt-row">
+            <span class="ci-opt-lbl">Insurance</span>
+            <label class="ci-toggle"><input type="checkbox"><span class="ci-toggle-track"></span></label>
+          </div>
+          <div class="ci-opt-row">
+            <span class="ci-opt-lbl">Lending</span>
+            <label class="ci-toggle"><input type="checkbox" checked><span class="ci-toggle-track"></span></label>
+          </div>
+
+          <div class="ci-page">
+            <span>1–5 of 15</span>
+            <div class="ci-page-btns">
+              <button class="ci-pg">‹</button>
+              <button class="ci-pg on">1</button>
+              <button class="ci-pg">2</button>
+              <button class="ci-pg" style="font-size:8px;letter-spacing:1px">···</button>
+              <button class="ci-pg">›</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Integrations teaser -->
+        <div class="ci-section" style="margin-bottom:10px;">
+          <div class="ci-sec-title" style="margin-bottom:4px;">Active Integrations <span class="ci-info-ico">i</span></div>
+          <div style="font-size:10px;color:var(--t3);padding:6px 0;">No active integrations for this contact.</div>
+        </div>
+
+      </div>
+    </div><!-- /ci-panel -->
+
+    <!-- RIGHT ACTION RAIL -->
+    <div class="action-rail">
+
+      <!-- Verified Identity / Contact Info -->
+      <button class="ar-btn" id="ciBtn" onclick="toggleContactInfo()" title="Contact info">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+          <circle cx="18.5" cy="18.5" r="3.5" fill="currentColor" stroke="none"/>
+          <path d="M17.2 18.5l.9.9 1.7-1.7" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <!-- Label / Tag -->
+      <button class="ar-btn" title="Add label">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="7" y1="7" x2="7.01" y2="7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <div class="ar-sep"></div>
+
+      <!-- Audio / Waveform -->
+      <button class="ar-btn" title="Audio settings">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <rect x="2"  y="9"  width="2.5" height="6"  rx="1.25" fill="currentColor"/>
+          <rect x="6"  y="6"  width="2.5" height="12" rx="1.25" fill="currentColor"/>
+          <rect x="10" y="4"  width="2.5" height="16" rx="1.25" fill="currentColor"/>
+          <rect x="14" y="6"  width="2.5" height="12" rx="1.25" fill="currentColor"/>
+          <rect x="18" y="9"  width="2.5" height="6"  rx="1.25" fill="currentColor"/>
+        </svg>
+      </button>
+
+      <div class="ar-sep"></div>
+
+      <!-- Remove contact -->
+      <button class="ar-btn danger" title="Remove contact">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+          <line x1="17" y1="11" x2="23" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <line x1="23" y1="11" x2="17" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+    </div><!-- /action-rail -->
+
+    </div><!-- /content-row -->
+  </div><!-- /workspace -->
+
+
+</div><!-- /body -->
+</div><!-- /main-content -->
+
+<!-- ══ SCENARIO BAR — fixed at bottom ══ -->
+<div class="scenario-bar">
+  <span class="sc-label">SCENARIO</span>
+  <button class="sc-btn on" id="sc-1" onclick="goToState(1)"><span class="sc-num">1</span>Conversation only</button>
+  <div class="sc-sep"></div>
+  <button class="sc-btn" id="sc-2" onclick="goToState(2)"><span class="sc-num">2</span>Video + Conversation</button>
+  <div class="sc-sep"></div>
+  <button class="sc-btn" id="sc-3" onclick="goToState(3)"><span class="sc-num">3</span>Video + Co-browse</button>
+  <div class="sc-sep"></div>
+  <button class="sc-btn" id="sc-4" onclick="goToState(4)"><span class="sc-num">4</span>Video + Workflows</button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+let currentState = 1;
+let inboxOpen = true;
+let callSecs = 0;
+let callTimer = null;
+let activeWFTab = 'cobrowse'; // track active tab
+let state2Swapped = false;    // tracks State 2 panel swap
+let state5Swapped = false;    // tracks State 5 panel swap
+
+/* ══ INBOX ══ */
+function toggleInbox(){
+  inboxOpen = !inboxOpen;
+  document.getElementById('inboxWrap').classList.toggle('closed', !inboxOpen);
+  document.getElementById('stripArrow').textContent = inboxOpen ? '◀' : '▶';
+  document.getElementById('stripLabel').textContent = inboxOpen ? 'Hide Inbox' : 'Show Inbox';
+  // clear alert styling when opening
+  if(inboxOpen){
+    document.getElementById('inboxStrip').classList.remove('alerting');
+    // keep badge visible until they actually view it — clear after short delay
+    setTimeout(()=>{
+      document.getElementById('stripBadge').classList.remove('show');
+      document.getElementById('stripNames').innerHTML = '';
+    }, 600);
+  }
+}
+
+/* ══ WORKFLOW TABS ══ */
+function switchWFTab(tab){
+  activeWFTab = tab;
+  document.querySelectorAll('.wft').forEach(b => b.classList.remove('on'));
+  const tabEl = document.getElementById('wft-'+tab);
+  if(tabEl) tabEl.classList.add('on');
+
+  if(currentState === 1){
+    // Split: conversation 35% left, workflow 65% right
+    const area = document.querySelector('#layer1 .wf-pane-area');
+    area.classList.add('s1-split');
+    document.getElementById('s1-conv').classList.add('on');
+    document.querySelectorAll('.s1-wf-pane').forEach(p => {
+      const active = p.id === 's1-' + tab;
+      p.classList.toggle('s1-hidden', !active);
+      p.classList.toggle('on', active);
+    });
+  } else {
+    setActivePaneInGroup('s234', tab);
+    if(currentState === 2){
+      document.getElementById('videoBlock').className = 'video-block vb-half';
+      document.getElementById('convBlock').className = 'conv-block';
+    }
+  }
+}
+
+function clearWFTab(){
+  activeWFTab = null;
+  document.querySelectorAll('.wft').forEach(b => b.classList.remove('on'));
+  const area = document.querySelector('#layer1 .wf-pane-area');
+  if(area) area.classList.remove('s1-split');
+  document.querySelectorAll('.s1-wf-pane').forEach(p => {
+    p.classList.add('s1-hidden'); p.classList.remove('on');
+  });
+  const s1conv = document.getElementById('s1-conv');
+  if(s1conv) s1conv.classList.add('on');
+}
+
+function setActivePaneInGroup(prefix, key){
+  const panes = ['conv','contact360','cobrowse','workflows','salesforce','sharing'];
+  panes.forEach(p => {
+    const el = document.getElementById(prefix+'-'+p);
+    if(el) el.classList.toggle('on', p===key);
+  });
+}
+
+/* ══ STATE MACHINE ══ */
+/* ══ AUTO-COLLAPSE ══ */
+function collapseForSession(){
+  const sb = document.getElementById('sidebar');
+  if(sb) sb.classList.remove('expanded');
+  if(inboxOpen){
+    inboxOpen = false;
+    document.getElementById('inboxWrap').classList.add('closed');
+    document.getElementById('stripArrow').textContent = '▶';
+    document.getElementById('stripLabel').textContent = 'Show Inbox';
+  }
+  setTimeout(()=> toast('↔  Nav & inbox collapsed — more space for your session'), 300);
+}
+function restoreForBrowsing(){
+  if(!inboxOpen){
+    inboxOpen = true;
+    document.getElementById('inboxWrap').classList.remove('closed');
+    document.getElementById('stripArrow').textContent = '◀';
+    document.getElementById('stripLabel').textContent = 'Hide Inbox';
+    document.getElementById('inboxStrip').classList.remove('alerting');
+    setTimeout(()=>{ document.getElementById('stripBadge').classList.remove('show'); }, 600);
+  }
+}
+
+function goToState(n){
+  currentState = n;
+  for(let i=1;i<=4;i++) document.getElementById('sc-'+i).classList.toggle('on', i===n);
+
+  if(n===1){
+    document.getElementById('layer1').classList.add('active');
+    document.getElementById('layer234').classList.remove('active');
+    document.getElementById('mbSub').textContent = '+1 (123) 456 78 90';
+    stopTimer();
+    const cbTab = document.getElementById('wft-cobrowse');
+    if(cbTab) cbTab.style.display = '';
+    // Default: Contact 360 open in split view
+    const area1 = document.querySelector('#layer1 .wf-pane-area');
+    if(area1) area1.classList.add('s1-split');
+    document.querySelectorAll('.wft').forEach(b => b.classList.remove('on'));
+    const c360tab = document.getElementById('wft-contact360');
+    if(c360tab) c360tab.classList.add('on');
+    document.getElementById('s1-conv').classList.add('on');
+    document.querySelectorAll('.s1-wf-pane').forEach(p => {
+      const active = p.id === 's1-contact360';
+      p.classList.toggle('s1-hidden', !active);
+      p.classList.toggle('on', active);
+    });
+    restoreForBrowsing();
+    toast('💬  Conversation + Contact 360');
+  }
+  else{
+    document.getElementById('layer1').classList.remove('active');
+    document.getElementById('layer234').classList.add('active');
+    collapseForSession();
+
+    // Ensure video block is visible for states 2-4 (state 5 hides it)
+    if(n !== 5){
+      const vb = document.getElementById('videoBlock');
+      if(vb) vb.style.display = '';
+    }
+
+    if(n===2){
+      startTimer();
+      // Reset any previous swap
+      state2Swapped = false;
+      applyState2Layout();
+      document.getElementById('mbSub').textContent = '+1 (123) 456 78 90';
+      clearWFTab();
+      setActivePaneInGroup('s234','conv');
+      toast('🎥  Video 35% · Conversation 65% — click ⇄ to swap proportions');
+    }
+    else if(n===3){
+      startTimer();
+      // Restore co-browse tab
+      const cbTab = document.getElementById('wft-cobrowse');
+      if(cbTab) cbTab.style.display = '';
+      resetSlots();
+      document.getElementById('mbSub').textContent = '+1 (123) 456 78 90';
+      applySlots();
+      activateTabHighlight('cobrowse');
+      toast('🖥  Co-browse — use ⇄ in any panel header to swap layouts');
+    }
+    else if(n===4){
+      startTimer();
+      // Restore co-browse tab
+      const cbTab = document.getElementById('wft-cobrowse');
+      if(cbTab) cbTab.style.display = '';
+      resetSlots();
+      document.getElementById('mbSub').textContent = '+1 (123) 456 78 90';
+      slots.right = 'cobrowse'; // same visual, just different tab highlight
+      applySlots();
+      document.getElementById('mbSub').textContent = '+1 (123) 456 78 90';
+      setActivePaneInGroup('s234','workflows');
+      activateTabHighlight('workflows');
+      toast('⚙  Switch tabs above — Co-browse, Workflows, Salesforce, Content Sharing');
+    }
+    else if(n===5){
+      // Conversation 35% left · Co-browse 65% right — no video
+      stopTimer();
+      state5Swapped = false;
+      // Restore co-browse tab
+      const cbTab5 = document.getElementById('wft-cobrowse');
+      if(cbTab5) cbTab5.style.display = '';
+      document.getElementById('mbSub').textContent = '+1 (123) 456 78 90';
+      applyState5Layout();
+      activateTabHighlight('cobrowse');
+      toast('🖥  Conversation 35% · Co-browse 65% — click ⇄ to swap proportions');
+    }
+  }
+}
+
+function activateTabHighlight(tab){
+  activeWFTab = tab;
+  document.querySelectorAll('.wft').forEach(b => b.classList.remove('on'));
+  const el = document.getElementById('wft-'+tab); if(el) el.classList.add('on');
+  // cobrowse live dot
+  const cbDot = document.querySelector('#wft-cobrowse .wft-dot');
+  if(cbDot) cbDot.style.display = (currentState >= 3) ? 'block' : 'none';
+}
+
+/* ══ CO-BROWSE SESSION ══ */
+function switchCb(m){
+  document.getElementById('cbV-sarah').style.display = m==='sarah'?'flex':'none';
+  document.getElementById('cbV-thomas').style.display = m==='thomas'?'block':'none';
+  document.querySelectorAll('.css-b').forEach(b=>b.classList.remove('active'));
+  const ab=document.getElementById('cbBtn-'+m); if(ab){ab.classList.add('active');ab.classList.remove('paused');}
+}
+
+/* ══ MESSAGES ══ */
+function sendMsg(listId, inputId){
+  const i=document.getElementById(inputId);
+  const t=i.value.trim(); if(!t) return;
+  const list=document.getElementById(listId); if(!list) return;
+  const isLg=list.classList.contains('lg');
+  const tm=new Date().getHours()+':'+String(new Date().getMinutes()).padStart(2,'0');
+  const b=document.createElement('div'); b.className='mb ag';
+  b.style.animation='msgpop .18s ease';
+  b.innerHTML=`<div class="mav${isLg?' lg':''}" style="background:#7DA3F3;border-radius:50%;">AR</div><div class="mbody"><div class="mt${isLg?' lg':''}">${t}</div><div class="mm">${tm}</div></div>`;
+  list.appendChild(b); list.scrollTop=list.scrollHeight; i.value='';
+}
+
+/* ══ MIC ══ */
+function toggleMic(){
+  const b=document.getElementById('vcm'); const v=document.getElementById('mv');
+  b.classList.toggle('muted'); const mu=b.classList.contains('muted');
+  b.textContent=mu?'🔇':'🎤'; v.className='vi '+(mu?'off':'on'); v.textContent=mu?'🔇':'🎤';
+}
+
+/* ══ CALL TIMER ══ */
+function startTimer(){
+  if(callTimer) return;
+  callTimer=setInterval(()=>{
+    callSecs++;
+    const m=String(Math.floor(callSecs/60)).padStart(2,'0');
+    const s=String(callSecs%60).padStart(2,'0');
+    const el=document.getElementById('vTimer'); if(el) el.textContent='00:'+m+':'+s;
+  },1000);
+}
+function stopTimer(){if(callTimer){clearInterval(callTimer);callTimer=null;callSecs=0;const el=document.getElementById('vTimer');if(el)el.textContent='00:00:00';}}
+
+/* ══ TOAST ══ */
+let toastTO=null;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  if(toastTO) clearTimeout(toastTO);
+  toastTO=setTimeout(()=>el.classList.remove('show'), 3000);
+}
+
+/* ══ INBOX ALERT (Richard, after 8s) — fires regardless of inbox state ══ */
+setTimeout(()=>{
+  // 1. Update his inbox row
+  document.getElementById('rw-n').className = 'iname b';
+  document.getElementById('rw-p').textContent = 'I still see the error on the form…';
+  document.getElementById('rw-t').textContent = 'now';
+  const ava = document.getElementById('rw-ava');
+  if(!document.querySelector('#ii-richard .ibadge')){
+    const bdg = document.createElement('div');
+    bdg.className = 'ibadge';
+    bdg.textContent = '1';
+    ava.appendChild(bdg);
+  }
+
+  // 2. ALWAYS show the strip badge + name chip + pulse, open or closed
+  triggerStripAlert('R. Walters');
+
+}, 8000);
+
+function triggerStripAlert(name){
+  const strip = document.getElementById('inboxStrip');
+  const badge = document.getElementById('stripBadge');
+  strip.classList.add('alerting');
+  badge.textContent = '1';
+  badge.classList.add('show');
+}
+
+/* ══ MINI COMPOSER EXPAND ══ */
+function toggleMiniExpand(){
+  const tray = document.getElementById('miniTray');
+  const plus = document.getElementById('miniPlus');
+  const open = tray.classList.toggle('open');
+  plus.classList.toggle('open', open);
+  plus.textContent = open ? '×' : '+';
+}
+function autoGrow(el){
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 72) + 'px';
+}
+
+/* ══ PANEL SWAP — true 3-way rotation ══
+   Three slots: LEFT-TOP, LEFT-BOTTOM, RIGHT
+   Three panels: 'video', 'conv', 'cobrowse'
+   Default: video=left-top, conv=left-bottom, cobrowse=right
+   Clicking ⇄ on any panel swaps that panel with whatever is in RIGHT slot.
+   The panel that was in RIGHT moves into the vacated slot.
+   In STATE 2 (Video + Conversation only), swapPanel is intercepted
+   and routes to a simple 2-way width toggle instead.
+*/
+let slots = { leftTop: 'video', leftBottom: 'conv', right: 'cobrowse' };
+
+/* ══ STATE 2 — 2-WAY LAYOUT TOGGLE ══
+   Default:  Video LEFT 35%  · Conversation RIGHT 65%
+   Swapped:  Video LEFT 65%  · Conversation RIGHT 35%
+*/
+function applyState2Layout(){
+  const leftCol = document.querySelector('#layer234 .left-col');
+  const vb = document.getElementById('videoBlock');
+  const cb = document.getElementById('convBlock');
+
+  // Video always fills the entire left col in State 2 (no conv block in left)
+  if(vb){ vb.style.display = 'flex'; vb.className = 'video-block vb-full'; }
+  if(cb){ cb.className = 'conv-block cb-hidden'; cb.style.display = ''; }
+
+  if(leftCol){
+    leftCol.style.width = state2Swapped ? '65%' : '35%';
+  }
+
+  // Update swap icons
+  const videoSwapIcon = vb ? vb.querySelector('.swap-icon') : null;
+  const convSwapIcon  = document.querySelector('#s234-conv .swap-icon');
+
+  if(videoSwapIcon){
+    videoSwapIcon.classList.toggle('swapped', state2Swapped);
+    videoSwapIcon.title = state2Swapped ? 'Restore: Video 35%, Conversation 65%' : 'Swap: Video 65%, Conversation 35%';
+  }
+  if(convSwapIcon){
+    convSwapIcon.classList.toggle('swapped', state2Swapped);
+    convSwapIcon.title = state2Swapped ? 'Restore: Video 35%, Conversation 65%' : 'Swap: Video 65%, Conversation 35%';
+  }
+}
+
+function toggleState2Layout(){
+  state2Swapped = !state2Swapped;
+  applyState2Layout();
+  if(state2Swapped){
+    toast('⇄ Video expanded to 65% · Conversation 35%');
+  } else {
+    toast('⇄ Restored — Video 35% · Conversation 65%');
+  }
+}
+
+/* ══ STATE 5 — Conversation 35% · Co-browse 65% (no video) ══ */
+function applyState5Layout(){
+  const leftCol = document.querySelector('#layer234 .left-col');
+  const vb = document.getElementById('videoBlock');
+  const cb = document.getElementById('convBlock');
+
+  // Hide video entirely, show conv block full-height
+  if(vb){ vb.style.display = 'none'; vb.className = 'video-block vb-full'; }
+  if(cb){
+    cb.style.display = 'flex';
+    cb.className = 'conv-block';          // remove cb-hidden
+    cb.style.flexBasis = '';
+    cb.style.flexShrink = '';
+  }
+
+  // Set left col width
+  if(leftCol) leftCol.style.width = state5Swapped ? '65%' : '35%';
+
+  // Right panel: show cobrowswap-icon') : null;
+  const cbSwapIcon   = document.querySelector('#s234-cobrowse .swap-icon');
+
+  [convSwapIcon, cbSwapIcon].forEach(icon => {
+    if(!icon) return;
+    icon.classList.toggle('swapped', state5Swapped);
+    icon.title = state5Swapped
+      ? 'Restore: Conversation 35%, Co-browse 65%'
+      : 'Swap: Co-browse 35%, Conversation 65%';
+  });
+}
+
+function toggleState5Layout(){
+  state5Swapped = !state5Swapped;
+  applyState5Layout();
+  toast(state5Swapped
+    ? '⇄ Co-browse expanded to 65% · Conversation 35%'
+    : '⇄ Restored — Conversation 35% · Co-browse 65%');
+}
+
+function swapPanel(clicked){
+  // State 2: simple 2-way width toggle
+  if(currentState === 2){ toggleState2Layout(); return; }
+  // State 5: simple 2-way width toggle
+  if(currentState === 5){ toggleState5Layout(); return; }
+
+  // States 3–4: original 3-way rotation
+  if(slots.right === clicked) return;
+  const clickedSlot = slots.leftTop === clicked ? 'leftTop' : 'leftBottom';
+  const wasInRight = slots.right;
+  slots.right = clicked;
+  slots[clickedSlot] = wasInRight;
+  applySlots();
+  const labels = { video:'🎥 Video', conv:'💬 Messages', cobrowse:'🖥 Co-browse' };
+  toast(`⇄ ${labels[clicked]} moved to main area · ${labels[wasInRight]} moved to left`);
+}
+
+function applySlots(){
+  const vb  = document.getElementById('videoBlock');
+  const cb  = document.getElementById('convBlock');
+  const cbl = document.getElementById('cbLeftBlock');
+
+  const lt = slots.leftTop;
+  const lb = slots.leftBottom;
+  const rt = slots.right;
+
+  // Map panel names to their left-col DOM elements
+  const elOf = p => p==='video' ? vb : p==='conv' ? cb : cbl;
+
+  // Hide all three left-col blocks first
+  [vb, cb, cbl].forEach(el => {
+    el.style.display = 'none';
+    el.style.flexBasis = '';
+    el.style.flexShrink = '';
+  });
+
+  // Show and size top + bottom
+  const topEl = elOf(lt);
+  const botEl = elOf(lb);
+
+  topEl.style.display   = 'flex';
+  botEl.style.display   = 'flex';
+  topEl.style.flexBasis  = '50%';
+  botEl.style.flexBasis  = '50%';
+  topEl.style.flexShrink = '0';
+  botEl.style.flexShrink = '0';
+
+  // Video block CSS class (for tile grid transitions)
+  vb.className = (vb.style.display === 'flex') ? 'video-block vb-half' : 'video-block vb-full';
+
+  // Conv block — must not have cb-hidden (that zeroes max-height)
+  cb.className  = 'conv-block';
+  cbl.className = 'conv-block';
+
+  // ── RIGHT PANEL ──
+  document.querySelectorAll('#layer234 .wf-pane').forEach(p => p.classList.remove('on'));
+  if(rt === 'video'){
+    document.getElementById('s234-video-swap').classList.add('on');
+  } else if(rt === 'conv'){
+    document.getElementById('s234-conv').classList.add('on');
+    document.querySelectorAll('.wft').forEach(b => b.classList.remove('on'));
+  } else {
+    document.getElementById('s234-cobrowse').classList.add('on');
+    activateTabHighlight('cobrowse');
+  }
+}
+
+function resetSlots(){
+  slots = { leftTop: 'video', leftBottom: 'conv', right: 'cobrowse' };
+}
+
+/* ══ KEYBOARD ══ */
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='TEXTAREA') return;
+  if(e.key>='1'&&e.key<='5') goToState(parseInt(e.key));
+});
+['s1Input','splitInput','rightInput'].forEach(id=>{
+  const el=document.getElementById(id); if(!el) return;
+  el.addEventListener('keydown',ev=>{
+    if(ev.key==='Enter'&&!ev.shiftKey){
+      ev.preventDefault();
+      if(id==='splitInput') sendMsg('splitMsgs','splitInput');
+      else if(id==='rightInput') sendMsg('rightMsgs','rightInput');
+      else sendMsg('s1Msgs','s1Input');
+    }
+  });
+});
+
+/* ══ CONTACT INFO PANEL ══ */
+function toggleContactInfo(){
+  const panel = document.getElementById('ciPanel');
+  const btn   = document.getElementById('ciBtn');
+  const open  = panel.classList.toggle('open');
+  btn.classList.toggle('ci-active', open);
+  btn.title = open ? 'Close contact info' : 'Contact info';
+  if(open){ const sb=document.getElementById('sidebar'); if(sb) sb.classList.remove('expanded'); }
+}
+
+/* ══ SIDEBAR TOGGLE ══ */
+function toggleSidebar(){
+  const sb = document.getElementById('sidebar');
+  sb.classList.toggle('expanded');
+}
+function setNavActive(el){
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// Init
+goToState(1);
+
+/* ══ SET CHANNEL (was undefined — fixes channel switcher buttons) ══ */
+function setChannel(el){
+  if(!el) return;
+  const row = el.closest('.rc-channels');
+  if(!row) return;
+  row.querySelectorAll('.rc-ch').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* ══ RESIZE HANDLE — drag to resize left col ══ */
+(function(){
+  const rh  = document.getElementById('resizeHandle');
+  const sv  = rh ? rh.closest('.split-view') : null;
+  let dragging=false, startX=0, startW=0;
+  if(!rh||!sv) return;
+
+  const getLeftCol = ()=> sv.querySelector('.left-col');
+
+  rh.addEventListener('mousedown', e=>{
+    const lc = getLeftCol(); if(!lc) return;
+    dragging=true; startX=e.clientX; startW=lc.offsetWidth;
+    rh.classList.add('dragging');
+    document.body.style.cursor='col-resize';
+    document.body.style.userSelect='none';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e=>{
+    if(!dragging) return;
+    const lc = getLeftCol(); if(!lc) return;
+    const svW = sv.offsetWidth;
+    const newW = Math.min(Math.max(startW + (e.clientX - startX), 190), svW * 0.62);
+    lc.style.width = newW + 'px';
+  });
+  document.addEventListener('mouseup', ()=>{
+    if(!dragging) return;
+    dragging=false;
+    rh.classList.remove('dragging');
+    document.body.style.cursor='';
+    document.body.style.userSelect='';
+  });
+  // Double-click to reset to default 35%
+  rh.addEventListener('dblclick', ()=>{
+    const lc = getLeftCol(); if(!lc) return;
+    lc.style.width = '35%';
+    toast('↔ Layout reset to default split');
+  });
+})();
+
+/* ══ VIDEO TILE FOCUS — click to highlight active speaker ══ */
+document.querySelectorAll('.vt').forEach(tile=>{
+  tile.addEventListener('click', ()=>{
+    const wasActive = tile.classList.contains('tile-focused');
+    document.querySelectorAll('.vt').forEach(t=>t.classList.remove('tile-focused','speaking'));
+    if(!wasActive) tile.classList.add('tile-focused');
+  });
+});
+
+/* ══ PANEL SWAP ANIMATION — flash new panel on swap ══ */
+const _origApplySlots = applySlots;
+applySlots = function(){
+  _origApplySlots();
+  // Add pane-in animation to newly shown panes
+  setTimeout(()=>{
+    document.querySelectorAll('#layer234 .wf-pane.on').forEach(p=>{
+      p.classList.remove('pane-in');
+      void p.offsetWidth; // reflow
+      p.classList.add('pane-in');
+      p.addEventListener('animationend', ()=>p.classList.remove('pane-in'), {once:true});
+    });
+  }, 10);
+};
+</script>
+</body>
+</html>
