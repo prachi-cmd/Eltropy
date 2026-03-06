@@ -1153,6 +1153,8 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
   <button class="sc-btn" id="sc-3" onclick="goToState(3)"><span class="sc-num">3</span>Video + Co-browse</button>
   <div class="sc-sep"></div>
   <button class="sc-btn" id="sc-4" onclick="goToState(4)"><span class="sc-num">4</span>Video + Workflows</button>
+  <div class="sc-sep"></div>
+  <button class="sc-btn" id="sc-5" onclick="goToState(5)"><span class="sc-num">5</span>Conversation + Co-browse</button>
 </div>
 
 <!-- TOAST -->
@@ -1165,6 +1167,7 @@ let callSecs = 0;
 let callTimer = null;
 let activeWFTab = 'cobrowse'; // track active tab
 let state2Swapped = false;    // tracks State 2 panel swap
+let state5Swapped = false;    // tracks State 5 panel swap
 
 /* ══ INBOX ══ */
 function toggleInbox(){
@@ -1226,7 +1229,7 @@ function setActivePaneInGroup(prefix, key){
 /* ══ STATE MACHINE ══ */
 function goToState(n){
   currentState = n;
-  for(let i=1;i<=4;i++) document.getElementById('sc-'+i).classList.toggle('on', i===n);
+  for(let i=1;i<=5;i++) document.getElementById('sc-'+i).classList.toggle('on', i===n);
 
   if(n===1){
     document.getElementById('layer1').classList.add('active');
@@ -1241,9 +1244,15 @@ function goToState(n){
   else{
     document.getElementById('layer1').classList.remove('active');
     document.getElementById('layer234').classList.add('active');
-    startTimer();
+
+    // Ensure video block is visible for states 2-4 (state 5 hides it)
+    if(n !== 5){
+      const vb = document.getElementById('videoBlock');
+      if(vb) vb.style.display = '';
+    }
 
     if(n===2){
+      startTimer();
       // Reset any previous swap
       state2Swapped = false;
       applyState2Layout();
@@ -1256,6 +1265,7 @@ function goToState(n){
       toast('🎥  Video 35% · Conversation 65% — click ⇄ to swap proportions');
     }
     else if(n===3){
+      startTimer();
       // Restore co-browse tab
       const cbTab = document.getElementById('wft-cobrowse');
       if(cbTab) cbTab.style.display = '';
@@ -1266,6 +1276,7 @@ function goToState(n){
       toast('🖥  Co-browse — use ⇄ in any panel header to swap layouts');
     }
     else if(n===4){
+      startTimer();
       // Restore co-browse tab
       const cbTab = document.getElementById('wft-cobrowse');
       if(cbTab) cbTab.style.display = '';
@@ -1277,6 +1288,18 @@ function goToState(n){
       setActivePaneInGroup('s234','workflows');
       activateTabHighlight('workflows');
       toast('⚙  Switch tabs above — Co-browse, Workflows, Salesforce, Content Sharing');
+    }
+    else if(n===5){
+      // Conversation 35% left · Co-browse 65% right — no video
+      stopTimer();
+      state5Swapped = false;
+      // Restore co-browse tab
+      const cbTab5 = document.getElementById('wft-cobrowse');
+      if(cbTab5) cbTab5.style.display = '';
+      document.getElementById('mbSub').textContent = '+1 (123) 456 78 90 · Auto Loans · 🖥 Co-browse';
+      applyState5Layout();
+      activateTabHighlight('cobrowse');
+      toast('🖥  Conversation 35% · Co-browse 65% — click ⇄ to swap proportions');
     }
   }
 }
@@ -1443,12 +1466,54 @@ function toggleState2Layout(){
   }
 }
 
-function swapPanel(clicked){
-  // In State 2: use simple 2-way width toggle, not 3-way slot rotation
-  if(currentState === 2){
-    toggleState2Layout();
-    return;
+/* ══ STATE 5 — Conversation 35% · Co-browse 65% (no video) ══ */
+function applyState5Layout(){
+  const leftCol = document.querySelector('#layer234 .left-col');
+  const vb = document.getElementById('videoBlock');
+  const cb = document.getElementById('convBlock');
+
+  // Hide video entirely, show conv block full-height
+  if(vb){ vb.style.display = 'none'; vb.className = 'video-block vb-full'; }
+  if(cb){
+    cb.style.display = 'flex';
+    cb.className = 'conv-block';          // remove cb-hidden
+    cb.style.flexBasis = '';
+    cb.style.flexShrink = '';
   }
+
+  // Set left col width
+  if(leftCol) leftCol.style.width = state5Swapped ? '65%' : '35%';
+
+  // Right panel: show cobrowse pane
+  document.querySelectorAll('#layer234 .wf-pane').forEach(p => p.classList.remove('on'));
+  document.getElementById('s234-cobrowse').classList.add('on');
+
+  // Update swap icons
+  const convSwapIcon = cb ? cb.querySelector('.swap-icon') : null;
+  const cbSwapIcon   = document.querySelector('#s234-cobrowse .swap-icon');
+
+  [convSwapIcon, cbSwapIcon].forEach(icon => {
+    if(!icon) return;
+    icon.classList.toggle('swapped', state5Swapped);
+    icon.title = state5Swapped
+      ? 'Restore: Conversation 35%, Co-browse 65%'
+      : 'Swap: Co-browse 35%, Conversation 65%';
+  });
+}
+
+function toggleState5Layout(){
+  state5Swapped = !state5Swapped;
+  applyState5Layout();
+  toast(state5Swapped
+    ? '⇄ Co-browse expanded to 65% · Conversation 35%'
+    : '⇄ Restored — Conversation 35% · Co-browse 65%');
+}
+
+function swapPanel(clicked){
+  // State 2: simple 2-way width toggle
+  if(currentState === 2){ toggleState2Layout(); return; }
+  // State 5: simple 2-way width toggle
+  if(currentState === 5){ toggleState5Layout(); return; }
 
   // States 3–4: original 3-way rotation
   if(slots.right === clicked) return;
@@ -1518,7 +1583,7 @@ function resetSlots(){
 /* ══ KEYBOARD ══ */
 document.addEventListener('keydown',e=>{
   if(e.target.tagName==='TEXTAREA') return;
-  if(e.key>='1'&&e.key<='4') goToState(parseInt(e.key));
+  if(e.key>='1'&&e.key<='5') goToState(parseInt(e.key));
 });
 ['s1Input','splitInput','rightInput'].forEach(id=>{
   const el=document.getElementById(id); if(!el) return;
