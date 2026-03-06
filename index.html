@@ -9,7 +9,7 @@
 :root{
   --bg:#f0f2f6;--s0:#fff;--s1:#f7f8fb;--s2:#eef0f5;--s3:#e4e7ef;
   --border:#dde1ea;--border2:#c5cad6;
-  --accent:#2563eb;--as:rgba(37,99,235,.07);
+  --accent:#00796B;--as:rgba(0,121,107,.07);
   --teal:#0d9488;--ts:rgba(13,148,136,.08);
   --red:#dc2626;--rs:rgba(220,38,38,.08);
   --amber:#d97706;--ws:rgba(217,119,6,.08);
@@ -54,12 +54,41 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
 /* ══ BODY ROW ══ */
 .body{flex:1;display:flex;overflow:hidden;min-height:0;}
 
-/* ICON RAIL */
-.rail{width:46px;background:var(--s0);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:2px;flex-shrink:0;}
-.rb{width:32px;height:32px;border-radius:7px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--t3);font-size:15px;transition:all .12s;}
-.rb:hover{background:var(--s2);color:var(--t2);}
-.rb.on{background:var(--as);color:var(--accent);}
-.rsep{width:24px;height:1px;background:var(--border);margin:4px 0;}
+/* ══ SIDEBAR NAV ══ */
+.sidebar{
+  width:46px;
+  background:#1e1b4b;
+  display:flex;flex-direction:column;
+  flex-shrink:0;overflow:hidden;
+  transition:width .3s cubic-bezier(.4,0,.2,1);
+  position:relative;z-index:10;
+}
+.sidebar.expanded{ width:220px; }
+.nav-list{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 0;display:flex;flex-direction:column;gap:1px;}
+.nav-list::-webkit-scrollbar{display:none;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:0 7px;height:36px;border-radius:8px;margin:0 5px;
+  cursor:pointer;border:none;background:transparent;
+  color:rgba(255,255,255,.55);font-family:var(--f);font-size:11.5px;font-weight:500;
+  white-space:nowrap;overflow:hidden;text-align:left;
+  transition:background .12s,color .12s;flex-shrink:0;
+}
+.nav-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.8);}
+.nav-item.active{background:rgba(255,255,255,.12);color:#fff;}
+.nav-icon{width:22px;height:22px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:6px;}
+.nav-item.active .nav-icon{background:rgba(255,255,255,.1);}
+.nav-label{flex:1;min-width:0;}
+.nav-badge{min-width:18px;height:18px;border-radius:9px;background:#f97316;color:#fff;font-size:9px;font-weight:700;font-family:var(--m);display:flex;align-items:center;justify-content:center;padding:0 4px;flex-shrink:0;}
+.nav-new{font-size:8px;font-weight:700;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.6);border-radius:4px;padding:1px 5px;flex-shrink:0;}
+.nav-sep{height:1px;background:rgba(255,255,255,.07);margin:6px 12px;}
+.sidebar-foot{padding:8px 0 10px;border-top:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;align-items:center;gap:6px;}
+.nav-help{display:flex;align-items:center;gap:10px;padding:0 7px;height:36px;border-radius:8px;margin:0 5px;cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,.55);font-family:var(--f);font-size:11.5px;white-space:nowrap;overflow:hidden;transition:background .12s;width:calc(100% - 10px);flex-shrink:0;}
+.nav-help:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.8);}
+.sidebar-toggle{width:26px;height:26px;border-radius:50%;background:#2d2a5e;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+.sidebar-toggle:hover{background:rgba(255,255,255,.15);color:#fff;}
+.sidebar-toggle svg{transition:transform .3s cubic-bezier(.4,0,.2,1);}
+.sidebar.expanded .sidebar-toggle svg{transform:rotate(180deg);}
 
 /* ══ INBOX ══ */
 .inbox-wrap{display:flex;flex-shrink:0;overflow:hidden;width:258px;transition:width .32s cubic-bezier(.4,0,.2,1);}
@@ -81,7 +110,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
 .ii:hover{background:var(--s1);}
 .ii.sel{background:var(--as);border-left:2.5px solid var(--accent);padding-left:9.5px;}
 .ii.live{background:rgba(13,148,136,.05);}
-.iava{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:var(--m);flex-shrink:0;position:relative;}
+.iava{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:var(--m);flex-shrink:0;position:relative;}
 .ibody{flex:1;min-width:0;}
 .itop{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;}
 .iname{font-size:11px;font-weight:500;color:var(--t2);}
@@ -99,54 +128,75 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
 
 /* ══ INBOX TOGGLE STRIP ══ */
 .inbox-strip{
-  width:40px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  cursor:pointer;transition:background .2s;position:relative;
+  width:24px;flex-shrink:0;
+  background:var(--s1);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;
+  cursor:pointer;position:relative;
+  z-index:8;
+  transition:background .15s;
 }
 .inbox-strip:hover{background:var(--s2);}
-.inbox-strip.alerting{animation:stripPulse 1s infinite;}
-/* The pill button — centered vertically always */
+/* The pill — floats, offset right so it overlaps the workspace edge slightly */
 .strip-pill{
-  display:flex;flex-direction:column;align-items:center;gap:5px;
-  padding:12px 0;background:var(--s0);border:1.5px solid var(--border);
-  border-radius:10px;width:28px;box-shadow:var(--sh1);transition:all .18s;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:10px 5px;
+  background:var(--s0);
+  border:1px solid var(--border);
+  border-radius:8px;
+  width:22px;
+  box-shadow:0 2px 8px rgba(0,0,0,.1);
+  transition:all .18s;
   position:relative;
 }
-.inbox-strip:hover .strip-pill{background:var(--accent);border-color:var(--accent);}
-.strip-arrow{font-size:10px;color:var(--accent);line-height:1;transition:color .18s;font-weight:700;}
-.inbox-strip:hover .strip-arrow{color:#fff;}
+.inbox-strip:hover .strip-pill{
+  background:var(--accent);
+  border-color:var(--accent);
+  box-shadow:0 4px 12px rgba(0,121,107,.25);
+}
+.inbox-strip.alerting .strip-pill{
+  border-color:var(--red);
+  box-shadow:0 0 0 3px rgba(220,38,38,.15);
+  animation:pillPulse 1.2s infinite;
+}
+@keyframes pillPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.25);}
+  50%{box-shadow:0 0 0 5px rgba(220,38,38,0);}
+}
+/* chevron arrow */
+.strip-arrow{
+  font-size:8px;color:var(--accent);
+  line-height:1;transition:all .18s;font-weight:900;
+  transform:scaleX(.85);
+}
+.inbox-strip:hover .strip-arrow{color:#fff;transform:scaleX(.85) scale(1.1);}
+/* divider line between arrow and label */
+.strip-divider{width:10px;height:1px;background:var(--border);transition:background .18s;}
+.inbox-strip:hover .strip-divider{background:rgba(255,255,255,.35);}
+/* vertical text label */
 .strip-label{
-  writing-mode:vertical-rl;transform:rotate(180deg);
-  font-size:9px;font-weight:700;color:var(--t2);
-  font-family:var(--f);letter-spacing:.02em;
-  user-select:none;transition:color .18s;
-  white-space:nowrap;
+  writing-mode:vertical-rl;
+  transform:rotate(180deg);
+  font-size:8px;font-weight:700;
+  color:var(--t3);font-family:var(--m);
+  letter-spacing:.04em;user-select:none;
+  transition:color .18s;white-space:nowrap;
 }
 .inbox-strip:hover .strip-label{color:#fff;}
-/* badge on pill — always visible when there's an unread, inbox open or closed */
+/* unread badge — number only, no names */
 .strip-badge{
-  position:absolute;top:-7px;right:-7px;
-  min-width:18px;height:18px;border-radius:9px;
-  background:var(--red);color:#fff;font-size:9px;font-weight:700;
+  position:absolute;top:-6px;right:-6px;
+  min-width:16px;height:16px;border-radius:8px;
+  background:var(--red);color:#fff;
+  font-size:8px;font-weight:700;
   display:none;align-items:center;justify-content:center;
-  font-family:var(--m);padding:0 4px;border:2px solid var(--s1);
-  z-index:5;
+  font-family:var(--m);padding:0 3px;
+  border:1.5px solid var(--s1);z-index:5;
 }
 .strip-badge.show{display:flex;animation:badgePop .35s cubic-bezier(.34,1.56,.64,1);}
-/* name chip below pill */
-.strip-names{
-  display:flex;flex-direction:column;align-items:center;gap:4px;
-  margin-top:12px;overflow:hidden;
-}
-.strip-name-chip{
-  writing-mode:vertical-rl;transform:rotate(180deg);
-  font-size:8px;font-weight:700;
-  background:var(--red);color:#fff;
-  border-radius:6px;padding:7px 4px;
-  font-family:var(--f);letter-spacing:.02em;
-  opacity:0;animation:nameSlide .35s ease forwards;
-  white-space:nowrap;
-}
+/* strip-names no longer shows name chips — hidden */
+.strip-names{display:none;}
 
 /* ══ WORKSPACE ══ */
 .workspace{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
@@ -181,15 +231,15 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
 /* MEMBER HEADER */
 .member-bar{background:var(--s0);border-bottom:1px solid var(--border);flex-shrink:0;box-shadow:var(--sh1);}
 .mb-top{height:46px;display:flex;align-items:center;padding:0 16px;gap:10px;}
-.mb-ava{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#2563eb,#0d9488);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:var(--m);flex-shrink:0;}
+.mb-ava{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#00796B,#0d9488);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:var(--m);flex-shrink:0;}
 .mb-info{flex:1;}
 .mb-name{font-weight:600;font-size:13px;}
 .mb-sub{font-size:10px;color:var(--t3);}
 .mb-r{display:flex;align-items:center;gap:6px;}
-.agch{display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:10px;font-weight:500;cursor:pointer;color:var(--t2);}
+.agch{display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:10px;font-weight:500;cursor:pointer;color:var(--t2);height:28px;}
 .agav{width:18px;height:18px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;font-family:var(--m);}
-.cmpbtn{background:var(--accent);border:none;color:#fff;border-radius:6px;padding:5px 14px;font-size:11px;font-family:var(--f);cursor:pointer;font-weight:600;}
-.cmpbtn:hover{background:#1d4ed8;}
+.cmpbtn{background:var(--accent);border:none;color:#fff;border-radius:6px;padding:0 14px;font-size:11px;font-family:var(--f);cursor:pointer;font-weight:600;height:28px;}
+.cmpbtn:hover{background:#005f56;}
 
 /* ── WORKFLOW TABS (always below member header) ── */
 .wf-tabs{height:38px;display:flex;align-items:stretch;padding:0 14px;gap:2px;border-bottom:1px solid var(--border);background:var(--s0);overflow-x:auto;flex-shrink:0;}
@@ -216,7 +266,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
 .video-block{display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;transition:flex-basis .45s cubic-bezier(.4,0,.2,1);position:relative;}
 .video-block.vb-full{flex-basis:100%;}
 .video-block.vb-half{flex-basis:50%;}
-.vs-head{height:32px;padding:0 10px;display:flex;align-items:center;gap:6px;flex-shrink:0;background:var(--s1);border-bottom:1px solid var(--border);}
+.vs-head{height:32px;padding:0 10px;display:flex;align-items:center;gap:6px;flex-shrink:0;background:var(--s1);border-bottom:1px solid var(--border);overflow:visible;}
 .vs-lbl{font-size:9px;font-weight:700;color:var(--t2);font-family:var(--m);letter-spacing:.06em;display:flex;align-items:center;gap:5px;flex:1;}
 .vl-dot{width:5px;height:5px;border-radius:50%;background:var(--teal);animation:pulse 1.5s infinite;}
 .vs-timer{font-family:var(--m);font-size:10px;color:var(--amber);font-weight:500;}
@@ -233,13 +283,13 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
 .vti{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:rgba(255,255,255,.05);font-family:var(--m);}
 .vtb{position:absolute;top:5px;left:5px;font-size:7px;font-weight:600;padding:2px 5px;border-radius:3px;font-family:var(--m);color:#fff;}
 .vtb.v{background:rgba(13,148,136,.9);}
-.vtb.y{left:auto;right:5px;background:rgba(37,99,235,.85);}
+.vtb.y{left:auto;right:5px;background:rgba(0,121,107,.85);}
 .vtb.s{background:rgba(124,58,237,.85);}
 .vtbot{position:absolute;bottom:0;left:0;right:0;padding:4px 6px;display:flex;align-items:center;justify-content:space-between;}
 .vtn{font-size:8px;font-weight:600;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;}
 .vtis{display:flex;gap:2px;}
 .vi{width:13px;height:13px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:7px;}
-.vi.on{background:rgba(37,99,235,.75);}
+.vi.on{background:rgba(0,121,107,.75);}
 .vi.off{background:rgba(220,38,38,.75);}
 .vi.ok{background:rgba(13,148,136,.75);}
 .vring{position:absolute;inset:-2px;border-radius:8px;border:2px solid var(--teal);animation:vring 2s infinite;pointer-events:none;}
@@ -250,14 +300,14 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
 .vc.mic{background:var(--s2);color:var(--t2);border:1px solid var(--border);}
 .vc.mic.muted{background:var(--rs);color:var(--red);}
 .vc.cam,.vc.hold{background:var(--s2);color:var(--t2);border:1px solid var(--border);}
-.vc.ai{background:var(--as);color:var(--accent);border:1px solid rgba(37,99,235,.2);}
+.vc.ai{background:var(--as);color:var(--accent);border:1px solid rgba(0,121,107,.2);}
 .vc.end{background:var(--red);color:#fff;border:none;}
 
 /* CONV BLOCK in left col */
 .conv-block{flex:1;display:flex;flex-direction:column;overflow:hidden;border-top:1px solid var(--border);min-height:0;transition:max-height .45s cubic-bezier(.4,0,.2,1),opacity .3s;position:relative;}
 .conv-block.cb-hidden{max-height:0;overflow:hidden;opacity:0;border-top:none;}
 
-.conv-head{height:32px;padding:0 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--s1);border-bottom:1px solid var(--border);}
+.conv-head{height:32px;padding:0 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--s1);border-bottom:1px solid var(--border);overflow:visible;}
 .conv-lbl{font-size:9px;font-weight:700;color:var(--t2);font-family:var(--m);letter-spacing:.06em;}
 
 /* MESSAGES */
@@ -269,12 +319,13 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
 .sys span{background:var(--s0);border:1px solid var(--border);padding:2px 10px;border-radius:20px;box-shadow:var(--sh1);}
 .mb{display:flex;gap:6px;align-items:flex-end;}
 .mb.ag{flex-direction:row-reverse;}
-.mav{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;flex-shrink:0;color:#fff;font-family:var(--m);}
+.mav{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;flex-shrink:0;color:#fff;font-family:var(--m);overflow:hidden;}
 .mav.lg{width:28px;height:28px;font-size:9px;border-radius:6px;}
+.mav img{width:100%;height:100%;object-fit:cover;display:block;}
 .mbody{max-width:82%;}
 .mt{padding:7px 10px;border-radius:9px;font-size:10.5px;line-height:1.55;}
 .mt.lg{padding:10px 14px;font-size:12px;}
-.mb.ag .mt{background:var(--accent);color:#fff;border-bottom-right-radius:2px;}
+.mb.ag .mt{background:#5C5685;color:#fff;border-bottom-right-radius:2px;}
 .mb.mem .mt{background:var(--s0);border:1px solid var(--border);border-bottom-left-radius:2px;color:var(--t1);box-shadow:var(--sh1);}
 .mm{font-size:8.5px;color:var(--t3);margin-top:2px;font-family:var(--m);}
 .mb.ag .mm{text-align:right;}
@@ -291,7 +342,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
 .cinput:focus{border-color:var(--accent);background:var(--s0);box-shadow:0 0 0 3px var(--as);}
 .csend{width:30px;height:30px;border-radius:6px;background:var(--accent);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
 .csend.lg{width:38px;height:38px;font-size:14px;border-radius:8px;}
-.csend:hover{background:#1d4ed8;}
+.csend:hover{background:#005f56;}
 
 /* RIGHT PANEL */
 .right-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
@@ -301,7 +352,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
 
 /* CO-BROWSE */
 .cb-inner{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;}
-.cb-subhead{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0;background:var(--s0);}
+.cb-subhead{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0;background:var(--s0);overflow:visible;}
 .cb-lbl{font-size:11px;font-weight:600;color:var(--t1);flex:1;display:flex;align-items:center;gap:6px;}
 .cb-ldot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 1.5s infinite;}
 .css-sw{display:flex;gap:4px;}
@@ -328,7 +379,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
 .br.h{height:20px;width:50%;background:#d1d5db;}
 .br.m{width:65%;}.br.s{width:35%;}
 .bcard{background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px;}
-.cur-s{position:absolute;width:12px;height:12px;border-radius:50%;background:rgba(37,99,235,.85);border:2px solid #fff;pointer-events:none;animation:cs 5s infinite;box-shadow:0 0 0 3px rgba(37,99,235,.2);z-index:10;}
+.cur-s{position:absolute;width:12px;height:12px;border-radius:50%;background:rgba(0,121,107,.85);border:2px solid #fff;pointer-events:none;animation:cs 5s infinite;box-shadow:0 0 0 3px rgba(0,121,107,.2);z-index:10;}
 
 /* PLACEHOLDER PANES */
 .ph-pane{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--t3);background:var(--bg);}
@@ -378,9 +429,49 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
   background:transparent;color:var(--t3);
   font-size:11px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  transition:all .13s;flex-shrink:0;margin-left:auto;
+  transition:background 0s, border-color 0s, color 0s;
+  flex-shrink:0;margin-left:auto;padding:3px;
+  position:relative;
 }
 .swap-icon:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* instant custom tooltip — appears BELOW icon to avoid overflow:hidden clipping */
+.swap-icon[data-tip]::after{
+  content:attr(data-tip);
+  position:absolute;
+  top:calc(100% + 6px);
+  right:0;
+  background:#1e293b;
+  color:#fff;
+  font-size:10px;
+  font-family:var(--f);
+  font-weight:500;
+  white-space:nowrap;
+  padding:4px 8px;
+  border-radius:5px;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 0s;
+  box-shadow:0 2px 8px rgba(0,0,0,.2);
+  z-index:9999;
+  letter-spacing:.01em;
+}
+.swap-icon[data-tip]::before{
+  content:'';
+  position:absolute;
+  top:calc(100% + 2px);
+  right:5px;
+  border:4px solid transparent;
+  border-bottom-color:#1e293b;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 0s;
+  z-index:9999;
+}
+.swap-icon[data-tip]:hover::after,
+.swap-icon[data-tip]:hover::before{
+  opacity:1;
+}
 /* restore button in swapped video pane */
 .swap-btn{
   display:flex;align-items:center;gap:4px;
@@ -574,7 +665,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
   position:relative;transition:background .15s;z-index:3;
   display:flex;align-items:center;justify-content:center;
 }
-.resize-handle:hover,.resize-handle.dragging{background:rgba(37,99,235,.12);}
+.resize-handle:hover,.resize-handle.dragging{background:rgba(0,121,107,.12);}
 .resize-handle::after{
   content:'';position:absolute;top:50%;left:50%;
   transform:translate(-50%,-50%);
@@ -635,14 +726,82 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
 
 /* ══ PANEL HEADER POLISH ══ */
 .vs-head{background:linear-gradient(90deg,rgba(13,148,136,.06),transparent);}
-.conv-head{background:linear-gradient(90deg,rgba(37,99,235,.04),transparent);}
+.conv-head{background:linear-gradient(90deg,rgba(0,121,107,.04),transparent);}
 .vs-lbl{font-size:9.5px;letter-spacing:.08em;}
 .conv-lbl{font-size:9.5px;letter-spacing:.08em;}
 
-/* ══ SWAP ICON IMPROVEMENTS ══ */
-.swap-icon{border-radius:5px;transition:all .13s;}
-.swap-icon:hover{background:var(--accent);color:#fff;border-color:var(--accent);transform:scale(1.08);}
-/* When state-2 is swapped, the swap icon gets a teal tint to show it's in an alternate layout */
+/* ══ CONTACT INFO PANEL ══ */
+.ci-panel{
+  width:0;flex-shrink:0;overflow:hidden;
+  background:var(--s0);
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  transition:width .3s cubic-bezier(.4,0,.2,1);
+}
+.ci-panel.open{ width:260px; }
+.ci-inner{width:260px;display:flex;flex-direction:column;height:100%;overflow-y:auto;overflow-x:hidden;}
+.ci-inner::-webkit-scrollbar{width:3px;}
+.ci-inner::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* header */
+.ci-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 14px 10px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.ci-title{font-size:12px;font-weight:700;color:var(--t1);}
+.ci-close{width:22px;height:22px;border-radius:5px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--t3);font-size:14px;transition:background .12s;}
+.ci-close:hover{background:var(--s2);color:var(--t2);}
+
+/* profile card */
+.ci-card{margin:10px 10px 0;background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:12px;flex-shrink:0;}
+.ci-profile{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.ci-ava{width:36px;height:36px;border-radius:50%;background:#E07A5F;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;font-family:var(--m);flex-shrink:0;}
+.ci-pname{font-size:12.5px;font-weight:700;color:var(--t1);margin-bottom:4px;}
+.ci-dnc{display:inline-flex;align-items:center;font-size:9px;font-weight:600;font-family:var(--m);color:var(--t2);background:var(--s0);border:1px solid var(--border2);border-radius:5px;padding:2px 8px;cursor:pointer;transition:all .12s;}
+.ci-dnc:hover{border-color:var(--accent);color:var(--accent);}
+.ci-divider{height:1px;background:var(--border);margin:8px 0;}
+.ci-row{display:flex;gap:8px;padding:3px 0;font-size:10.5px;}
+.ci-lbl{width:72px;color:var(--t3);flex-shrink:0;}
+.ci-val{color:var(--t1);font-weight:500;flex:1;}
+.ci-val.teal{color:var(--accent);font-weight:600;}
+
+/* sections */
+.ci-section{margin:10px 10px 0;background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:12px;flex-shrink:0;}
+.ci-sec-title{font-size:11.5px;font-weight:700;color:var(--t1);margin-bottom:10px;}
+.ci-opt-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;font-size:11px;color:var(--t1);}
+.ci-opt-row + .ci-opt-row{border-top:1px solid var(--border);}
+.ci-opt-lbl{display:flex;align-items:center;gap:5px;color:var(--t2);font-size:10.5px;}
+.ci-info-ico{width:13px;height:13px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:7px;color:var(--t3);cursor:help;}
+
+/* toggle switch */
+.ci-toggle{position:relative;width:34px;height:18px;flex-shrink:0;}
+.ci-toggle input{opacity:0;width:0;height:0;position:absolute;}
+.ci-toggle-track{
+  position:absolute;inset:0;border-radius:9px;
+  background:var(--border2);cursor:pointer;transition:background .2s;
+}
+.ci-toggle input:checked + .ci-toggle-track{background:var(--accent);}
+.ci-toggle-track::after{
+  content:'';position:absolute;
+  width:12px;height:12px;border-radius:50%;
+  background:#fff;top:3px;left:3px;
+  transition:transform .2s;
+  box-shadow:0 1px 2px rgba(0,0,0,.2);
+}
+.ci-toggle input:checked + .ci-toggle-track::after{transform:translateX(16px);}
+
+/* pagination */
+.ci-page{display:flex;align-items:center;justify-content:space-between;padding:8px 0 2px;font-size:9.5px;color:var(--t3);}
+.ci-page-btns{display:flex;align-items:center;gap:3px;}
+.ci-pg{width:18px;height:18px;border-radius:4px;border:1px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--t2);font-family:var(--m);}
+.ci-pg.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+.ci-pg:hover:not(.on){background:var(--s2);}
+
+/* active button state on rail */
+.ar-btn.ci-active{background:var(--s2);color:var(--accent);}
+
 .swap-icon.swapped{background:rgba(13,148,136,.1);color:var(--teal);border-color:rgba(13,148,136,.3);}
 .swap-icon.swapped:hover{background:var(--teal);color:#fff;border-color:var(--teal);}
 </style>
@@ -663,12 +822,97 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
 
 <div class="body">
 
-  <!-- ICON RAIL -->
-  <div class="rail">
-    <div class="rb on">💬</div><div class="rb">👥</div><div class="rb">🎯</div><div class="rb">🔍</div>
-    <div class="rsep"></div>
-    <div class="rb">📊</div><div class="rb">📤</div><div class="rb">👁</div><div class="rb">📈</div>
-    <div style="margin-top:auto"></div><div class="rb">📌</div>
+  <!-- SIDEBAR NAV -->
+  <div class="sidebar" id="sidebar">
+    <div class="nav-list">
+
+      <button class="nav-item active" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+        <span class="nav-label">Conversations</span>
+        <span class="nav-badge">12</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg></span>
+        <span class="nav-label">Live</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+        <span class="nav-label">Appointments</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
+        <span class="nav-label">AI Assistant</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><circle cx="18" cy="8" r="3" fill="none"/><path d="M20.5 6l1 1-3 3"/></svg></span>
+        <span class="nav-label">Reputation Mgmt</span>
+        <span class="nav-badge">12</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="8" height="14" rx="1"/><rect x="9" y="3" width="6" height="18" rx="1"/><rect x="16" y="10" width="6" height="11" rx="1"/></svg></span>
+        <span class="nav-label">AI Management</span>
+      </button>
+
+      <div class="nav-sep"></div>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg></span>
+        <span class="nav-label">Modules</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg></span>
+        <span class="nav-label">Insights</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+        <span class="nav-label">Reports</span>
+        <span class="nav-new">New</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
+        <span class="nav-label">Submissions</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+        <span class="nav-label">Activity</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 4v16"/></svg></span>
+        <span class="nav-label">Campaigns</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>
+        <span class="nav-label">Collateral Map</span>
+      </button>
+
+      <button class="nav-item" onclick="setNavActive(this)">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="6.5" y1="7.8" x2="11" y2="16.2"/><line x1="17.5" y1="7.8" x2="13" y2="16.2"/></svg></span>
+        <span class="nav-label">Flows</span>
+      </button>
+
+    </div>
+
+    <div class="sidebar-foot">
+      <button class="nav-help">
+        <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+        <span class="nav-label">Help &amp; Support</span>
+        <span class="nav-badge">12</span>
+      </button>
+      <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Expand nav">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
   </div>
 
   <!-- INBOX -->
@@ -682,23 +926,23 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
       <div class="isec">Chats <span class="iscnt">23</span></div>
       <div class="ilist">
         <div class="ii sel live">
-          <div class="iava" style="background:linear-gradient(135deg,#2563eb,#0d9488)">SJ</div>
+          <div class="iava" style="background:#E07A5F">SJ</div>
           <div class="ibody"><div class="itop"><span class="iname" style="color:var(--t1);font-weight:600">Sarah Johnson</span><span class="itime">5m</span></div><div class="irow2"><span class="iprev">Reviewing loan application</span><span class="lpill">LIVE</span></div></div>
         </div>
         <div class="ii">
-          <div class="iava" style="background:linear-gradient(135deg,#d97706,#dc2626);position:relative">DL<div class="ibadge">12</div></div>
+          <div class="iava" style="background:#E6A817;position:relative">DL<div class="ibadge">12</div></div>
           <div class="ibody"><div class="itop"><span class="iname">Dario Lessing</span><span class="itime">5m</span></div><div class="irow2"><span class="iprev">Okay, thanks!</span><span class="itag tm">MORT</span></div></div>
         </div>
         <div class="ii" id="ii-richard">
-          <div class="iava" style="background:linear-gradient(135deg,#0d9488,#0891b2)" id="rw-ava">RW</div>
+          <div class="iava" style="background:#6C8EBF" id="rw-ava">RW</div>
           <div class="ibody"><div class="itop"><span class="iname" id="rw-n">Richard Walters</span><span class="itime" id="rw-t">5m</span></div><div class="irow2"><span class="iprev" id="rw-p">Okay, thanks!</span><span class="itag tl">LEND</span></div></div>
         </div>
         <div class="ii live">
-          <div class="iava" style="background:linear-gradient(135deg,#7c3aed,#2563eb);position:relative">TA<div class="ibadge">3</div></div>
+          <div class="iava" style="background:#9B6FCA;position:relative">TA<div class="ibadge">3</div></div>
           <div class="ibody"><div class="itop"><span class="iname">Thomas Anderson</span><span class="itime">2m</span></div><div class="irow2"><span class="iprev">Co-browse paused</span><span class="ppill">PAUSED</span></div></div>
         </div>
         <div class="ii">
-          <div class="iava" style="background:linear-gradient(135deg,#0891b2,#0d9488)">EO</div>
+          <div class="iava" style="background:#4AADA8">EO</div>
           <div class="ibody"><div class="itop"><span class="iname">Emma Olivers</span><span class="itime">5m</span></div><div class="irow2"><span class="iprev">Okay, thanks!</span><span class="itag tm">MORT</span></div></div>
         </div>
       </div>
@@ -706,11 +950,12 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
     </div>
   </div>
 
-  <!-- INBOX TOGGLE STRIP — always visible, vertically centered -->
+  <!-- INBOX TOGGLE STRIP -->
   <div class="inbox-strip" id="inboxStrip" onclick="toggleInbox()">
     <div class="strip-pill" id="stripPill">
-      <div class="strip-badge" id="stripBadge">0</div>
+      <div class="strip-badge" id="stripBadge">1</div>
       <div class="strip-arrow" id="stripArrow">◀</div>
+      <div class="strip-divider"></div>
       <div class="strip-label" id="stripLabel">Hide Inbox</div>
     </div>
     <div class="strip-names" id="stripNames"></div>
@@ -722,10 +967,9 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
     <!-- MEMBER HEADER + WORKFLOW TABS -->
     <div class="member-bar">
       <div class="mb-top">
-        <div class="mb-ava">SJ</div>
         <div class="mb-info">
           <div class="mb-name">Sarah Johnson</div>
-          <div class="mb-sub" id="mbSub">+1 (123) 456 78 90 · Auto Loans</div>
+          <div class="mb-sub" id="mbSub">+1 (123) 456 78 90</div>
         </div>
         <div class="mb-r">
           <div class="agch"><div class="agav">AR</div>Andrew Raynold ▾</div>
@@ -756,12 +1000,12 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
             <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--s0);">
               <div class="msgs lg" id="s1Msgs">
                 <div class="sys"><span>📅 Today, November 25th</span></div>
-                <div class="mb ag"><div class="mav lg" style="background:var(--accent)">AR</div><div class="mbody"><div class="mt lg">Hello Sarah! How can I help you today?</div><div class="mm">10:00 AM</div></div></div>
-                <div class="mb mem"><div class="mav lg" style="background:linear-gradient(135deg,#2563eb,#0d9488)">SJ</div><div class="mbody"><div class="mt lg">Hi! I'm trying to check on my loan application status. I submitted it two weeks ago.</div><div class="mm">10:01 AM</div></div></div>
-                <div class="mb ag"><div class="mav lg" style="background:var(--accent)">AR</div><div class="mbody"><div class="mt lg">Of course, let me pull that up. Could you confirm your date of birth?</div><div class="mm">10:02 AM</div></div></div>
-                <div class="mb mem"><div class="mav lg" style="background:linear-gradient(135deg,#2563eb,#0d9488)">SJ</div><div class="mbody"><div class="mt lg">Sure — March 14, 1985.</div><div class="mm">10:03 AM</div></div></div>
-                <div class="mb ag"><div class="mav lg" style="background:var(--accent)">AR</div><div class="mbody"><div class="mt lg">Got it! I can see your application. Would you like to start a video call?</div><div class="mm">10:04 AM</div></div></div>
-                <div class="mb mem"><div class="mav lg" style="background:linear-gradient(135deg,#2563eb,#0d9488)">SJ</div><div class="mbody"><div class="mt lg">Yes, that would be really helpful!</div><div class="mm">10:04 AM</div></div></div>
+                <div class="mb ag"><div class="mav lg" style="background:#7DA3F3;border-radius:50%;">AR</div><div class="mbody"><div class="mt lg">Hello Sarah! How can I help you today?</div><div class="mm">10:00 AM</div></div></div>
+                <div class="mb mem"><div class="mav lg" style="background:#E07A5F;border-radius:50%;">SJ</div><div class="mbody"><div class="mt lg">Hi! I'm trying to check on my loan application status. I submitted it two weeks ago.</div><div class="mm">10:01 AM</div></div></div>
+                <div class="mb ag"><div class="mav lg" style="background:#7DA3F3;border-radius:50%;">AR</div><div class="mbody"><div class="mt lg">Of course, let me pull that up. Could you confirm your date of birth?</div><div class="mm">10:02 AM</div></div></div>
+                <div class="mb mem"><div class="mav lg" style="background:#E07A5F;border-radius:50%;">SJ</div><div class="mbody"><div class="mt lg">Sure — March 14, 1985.</div><div class="mm">10:03 AM</div></div></div>
+                <div class="mb ag"><div class="mav lg" style="background:#7DA3F3;border-radius:50%;">AR</div><div class="mbody"><div class="mt lg">Got it! I can see your application. Would you like to start a video call?</div><div class="mm">10:04 AM</div></div></div>
+                <div class="mb mem"><div class="mav lg" style="background:#E07A5F;border-radius:50%;">SJ</div><div class="mbody"><div class="mt lg">Yes, that would be really helpful!</div><div class="mm">10:04 AM</div></div></div>
               </div>
               <!-- RICH COMPOSER -->
               <div class="rich-composer">
@@ -877,7 +1121,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
               <div class="vs-head">
                 <div class="vs-lbl"><div class="vl-dot"></div>VIDEO · 3 participants</div>
                 <div class="vs-timer" id="vTimer">00:00:00</div>
-                <button class="swap-icon" onclick="swapPanel('video')" title="Move to main area">⇄</button>
+                <button class="swap-icon" onclick="swapPanel('video')" data-tip="Expand video to main view"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
               </div>
               <div class="vgw g2">
                 <div class="vt verified"><div class="vring"></div><div class="vtbg"></div><div class="vtg"></div><div class="vti">SJ</div><div class="vtb v">VERIF</div><div class="vtbot"><div class="vtn">Sarah Johnson</div><div class="vtis"><div class="vi on">🎤</div><div class="vi ok">📷</div></div></div></div>
@@ -897,12 +1141,12 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
             <div class="conv-block cb-hidden" id="convBlock">
               <div class="conv-head">
                 <div class="conv-lbl">💬 MESSAGES</div>
-                <button class="swap-icon" onclick="swapPanel('conv')" title="Move to main area">⇄</button>
+                <button class="swap-icon" onclick="swapPanel('conv')" data-tip="Expand messages to main view"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
               </div>
               <div class="msgs" id="splitMsgs">
                 <div class="sys"><span>🎥 Video started</span></div>
-                <div class="mb mem"><div class="mav" style="background:linear-gradient(135deg,#2563eb,#0d9488)">SJ</div><div class="mbody"><div class="mt">Can you see me okay?</div><div class="mm">10:05 AM</div></div></div>
-                <div class="mb ag"><div class="mav" style="background:var(--accent)">AR</div><div class="mbody"><div class="mt">Yes, clearly! Starting co-browse now.</div><div class="mm">10:05 AM</div></div></div>
+                <div class="mb mem"><div class="mav" style="background:#E07A5F;border-radius:50%;">SJ</div><div class="mbody"><div class="mt">Can you see me okay?</div><div class="mm">10:05 AM</div></div></div>
+                <div class="mb ag"><div class="mav" style="background:#7DA3F3;border-radius:50%;">AR</div><div class="mbody"><div class="mt">Yes, clearly! Starting co-browse now.</div><div class="mm">10:05 AM</div></div></div>
               </div>
               <!-- MINI COMPOSER: single-line, expandable -->
               <div class="mini-composer" id="miniComposer">
@@ -932,7 +1176,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
             <div class="conv-block cb-hidden" id="cbLeftBlock" style="border-top:1px solid var(--border);">
               <div class="conv-head">
                 <div class="conv-lbl" style="display:flex;align-items:center;gap:5px;"><span style="width:5px;height:5px;border-radius:50%;background:var(--teal);display:inline-block;animation:pulse 1.5s infinite;"></span>🖥 CO-BROWSE</div>
-                <button class="swap-icon" onclick="swapPanel('cobrowse')" title="Move to main area">⇄</button>
+                <button class="swap-icon" onclick="swapPanel('cobrowse')" data-tip="Expand co-browse to main view"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
               </div>
               <!-- mini cobrowse preview -->
               <div style="flex:1;background:#dde3ef;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
@@ -953,7 +1197,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
                     </div>
                   </div>
                   <!-- live cursor dot -->
-                  <div style="position:absolute;width:8px;height:8px;border-radius:50%;background:rgba(37,99,235,.85);border:1.5px solid #fff;top:40%;left:55%;animation:cs 5s infinite;pointer-events:none;"></div>
+                  <div style="position:absolute;width:8px;height:8px;border-radius:50%;background:rgba(0,121,107,.85);border:1.5px solid #fff;top:40%;left:55%;animation:cs 5s infinite;pointer-events:none;"></div>
                 </div>
                 <div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);background:var(--s0);border:1px solid var(--border);border-radius:5px;padding:3px 9px;display:flex;align-items:center;gap:5px;font-size:9px;box-shadow:var(--sh1);white-space:nowrap;">
                   <span style="width:4px;height:4px;border-radius:50%;background:var(--teal);animation:pulse 1.5s infinite;display:inline-block;"></span>
@@ -974,15 +1218,15 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
                 <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--s0);">
                   <div style="height:32px;padding:0 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--s1);border-bottom:1px solid var(--border);">
                     <span style="font-size:9px;font-weight:700;color:var(--t2);font-family:var(--m);letter-spacing:.06em;">💬 MESSAGES</span>
-                    <button class="swap-icon" onclick="swapPanel('conv')" title="Move to left panel">⇄</button>
+                    <button class="swap-icon" onclick="swapPanel('conv')" data-tip="Expand messages to main view"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
                   </div>
                   <div class="msgs lg" id="rightMsgs">
                     <div class="sys"><span>📅 Today, November 25th</span></div>
-                    <div class="mb ag"><div class="mav lg" style="background:var(--accent)">AR</div><div class="mbody"><div class="mt lg">Would you like to start a video call?</div><div class="mm">10:04 AM</div></div></div>
-                    <div class="mb mem"><div class="mav lg" style="background:linear-gradient(135deg,#2563eb,#0d9488)">SJ</div><div class="mbody"><div class="mt lg">Yes, that would be really helpful!</div><div class="mm">10:04 AM</div></div></div>
+                    <div class="mb ag"><div class="mav lg" style="background:#7DA3F3;border-radius:50%;">AR</div><div class="mbody"><div class="mt lg">Would you like to start a video call?</div><div class="mm">10:04 AM</div></div></div>
+                    <div class="mb mem"><div class="mav lg" style="background:#E07A5F;border-radius:50%;">SJ</div><div class="mbody"><div class="mt lg">Yes, that would be really helpful!</div><div class="mm">10:04 AM</div></div></div>
                     <div class="sys"><span>🎥 Video call started · Sarah Johnson, Andrew Raynold, Amanda Wilson joined</span></div>
-                    <div class="mb mem"><div class="mav lg" style="background:linear-gradient(135deg,#2563eb,#0d9488)">SJ</div><div class="mbody"><div class="mt lg">Can you see me okay?</div><div class="mm">10:05 AM</div></div></div>
-                    <div class="mb ag"><div class="mav lg" style="background:var(--accent)">AR</div><div class="mbody"><div class="mt lg">Yes, clearly! Let me pull up your loan application.</div><div class="mm">10:05 AM</div></div></div>
+                    <div class="mb mem"><div class="mav lg" style="background:#E07A5F;border-radius:50%;">SJ</div><div class="mbody"><div class="mt lg">Can you see me okay?</div><div class="mm">10:05 AM</div></div></div>
+                    <div class="mb ag"><div class="mav lg" style="background:#7DA3F3;border-radius:50%;">AR</div><div class="mbody"><div class="mt lg">Yes, clearly! Let me pull up your loan application.</div><div class="mm">10:05 AM</div></div></div>
                   </div>
                   <!-- VIDEO MODE COMPOSER -->
                   <div class="vc-composer">
@@ -1042,11 +1286,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
                 <div class="cb-inner">
                   <div class="cb-subhead">
                     <div class="cb-lbl"><div class="cb-ldot"></div>Co-browsing with Sarah Johnson</div>
-                    <div class="css-sw">
-                      <button class="css-b active" id="cbBtn-sarah" onclick="switchCb('sarah')">SJ · Sarah</button>
-                      <button class="css-b paused" id="cbBtn-thomas" onclick="switchCb('thomas')">TA · Thomas ⏸</button>
-                    </div>
-                    <button class="swap-icon" onclick="swapPanel('cobrowse')" title="Move to left">⇄</button>
+                    <button class="swap-icon" onclick="swapPanel('cobrowse')" data-tip="Expand co-browse to main view"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
                   </div>
                   <div class="cbscr">
                     <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative;" id="cbV-sarah">
@@ -1088,11 +1328,92 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);display:flex;flex
 
     </div><!-- /main-area -->
 
+    <!-- CONTACT INFO PANEL (slides in from right of main-area) -->
+    <div class="ci-panel" id="ciPanel">
+      <div class="ci-inner">
+
+        <!-- Header -->
+        <div class="ci-head">
+          <span class="ci-title">Contact info</span>
+          <button class="ci-close" onclick="toggleContactInfo()" title="Close">✕</button>
+        </div>
+
+        <!-- Profile card -->
+        <div class="ci-card">
+          <div class="ci-profile">
+            <div class="ci-ava">SJ</div>
+            <div>
+              <div class="ci-pname">Sarah Johnson</div>
+              <button class="ci-dnc">Verify DNC</button>
+            </div>
+          </div>
+          <div class="ci-divider"></div>
+          <div class="ci-row"><span class="ci-lbl">Email</span><span class="ci-val">sarahjohnson@yahoo.com</span></div>
+          <div class="ci-row"><span class="ci-lbl">Phone</span><span class="ci-val teal">+1 (310) 492-7762</span></div>
+          <div class="ci-row"><span class="ci-lbl">Last seen</span><span class="ci-val">Yesterday, 04:29 PM</span></div>
+          <div class="ci-row"><span class="ci-lbl">Department</span><span class="ci-val">Lending</span></div>
+        </div>
+
+        <!-- Opt-in status -->
+        <div class="ci-section">
+          <div class="ci-sec-title">Opt-in status</div>
+
+          <div class="ci-opt-row">
+            <span class="ci-opt-lbl" style="color:var(--t1);font-weight:600;font-size:11px;">Global opt-out <span class="ci-info-ico">i</span></span>
+            <label class="ci-toggle"><input type="checkbox"><span class="ci-toggle-track"></span></label>
+          </div>
+
+          <div class="ci-divider"></div>
+
+          <div style="font-size:10.5px;font-weight:600;color:var(--t1);margin-bottom:6px;display:flex;align-items:center;gap:5px;">Department opt-in <span class="ci-info-ico">i</span></div>
+
+          <div class="ci-opt-row">
+            <span class="ci-opt-lbl">Accounts</span>
+            <label class="ci-toggle"><input type="checkbox" checked><span class="ci-toggle-track"></span></label>
+          </div>
+          <div class="ci-opt-row">
+            <span class="ci-opt-lbl">Collections</span>
+            <label class="ci-toggle"><input type="checkbox"><span class="ci-toggle-track"></span></label>
+          </div>
+          <div class="ci-opt-row">
+            <span class="ci-opt-lbl">HELOC</span>
+            <label class="ci-toggle"><input type="checkbox" checked><span class="ci-toggle-track"></span></label>
+          </div>
+          <div class="ci-opt-row">
+            <span class="ci-opt-lbl">Insurance</span>
+            <label class="ci-toggle"><input type="checkbox"><span class="ci-toggle-track"></span></label>
+          </div>
+          <div class="ci-opt-row">
+            <span class="ci-opt-lbl">Lending</span>
+            <label class="ci-toggle"><input type="checkbox" checked><span class="ci-toggle-track"></span></label>
+          </div>
+
+          <div class="ci-page">
+            <span>1–5 of 15</span>
+            <div class="ci-page-btns">
+              <button class="ci-pg">‹</button>
+              <button class="ci-pg on">1</button>
+              <button class="ci-pg">2</button>
+              <button class="ci-pg" style="font-size:8px;letter-spacing:1px">···</button>
+              <button class="ci-pg">›</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Integrations teaser -->
+        <div class="ci-section" style="margin-bottom:10px;">
+          <div class="ci-sec-title" style="margin-bottom:4px;">Active Integrations <span class="ci-info-ico">i</span></div>
+          <div style="font-size:10px;color:var(--t3);padding:6px 0;">No active integrations for this contact.</div>
+        </div>
+
+      </div>
+    </div><!-- /ci-panel -->
+
     <!-- RIGHT ACTION RAIL -->
     <div class="action-rail">
 
-      <!-- Verified Identity -->
-      <button class="ar-btn" title="Verified identity">
+      <!-- Verified Identity / Contact Info -->
+      <button class="ar-btn" id="ciBtn" onclick="toggleContactInfo()" title="Contact info">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
@@ -1227,6 +1548,42 @@ function setActivePaneInGroup(prefix, key){
 }
 
 /* ══ STATE MACHINE ══ */
+/* ══ AUTO-COLLAPSE HELPERS ══
+   collapseForSession()  — called when entering any active session (states 2–5)
+                           collapses inbox + sidebar to free up space for workspace
+   restoreForBrowsing()  — called when returning to state 1 (discovery/waiting mode)
+                           re-opens inbox + expands sidebar
+   Manual toggles always override these for the rest of that state visit.
+*/
+function collapseForSession(){
+  const sb = document.getElementById('sidebar');
+  if(sb) sb.classList.remove('expanded');
+
+  if(inboxOpen){
+    inboxOpen = false;
+    document.getElementById('inboxWrap').classList.add('closed');
+    document.getElementById('stripArrow').textContent = '▶';
+    document.getElementById('stripLabel').textContent = 'Show Inbox';
+  }
+  // Brief hint so agent knows panels auto-collapsed
+  setTimeout(()=> toast('↔  Nav & inbox collapsed — more space for your session'), 300);
+}
+
+function restoreForBrowsing(){
+  // Re-open inbox
+  if(!inboxOpen){
+    inboxOpen = true;
+    document.getElementById('inboxWrap').classList.remove('closed');
+    document.getElementById('stripArrow').textContent = '◀';
+    document.getElementById('stripLabel').textContent = 'Hide Inbox';
+    document.getElementById('inboxStrip').classList.remove('alerting');
+    setTimeout(()=>{ document.getElementById('stripBadge').classList.remove('show'); }, 600);
+  }
+  // Expand sidebar
+  const sb = document.getElementById('sidebar');
+  if(sb) sb.classList.add('expanded');
+}
+
 function goToState(n){
   currentState = n;
   for(let i=1;i<=5;i++) document.getElementById('sc-'+i).classList.toggle('on', i===n);
@@ -1234,16 +1591,19 @@ function goToState(n){
   if(n===1){
     document.getElementById('layer1').classList.add('active');
     document.getElementById('layer234').classList.remove('active');
-    document.getElementById('mbSub').textContent = '+1 (123) 456 78 90 · Auto Loans';
+    document.getElementById('mbSub').textContent = '+1 (123) 456 78 90';
     stopTimer();
-    // no tab active — full conversation is the default view
+    const cbTab = document.getElementById('wft-cobrowse');
+    if(cbTab) cbTab.style.display = '';
     clearWFTab();
-    setActivePaneInGroup('s1','conv'); // show plain conv
-    toast('💬  Conversation only — use tabs above to start a workflow');
+    setActivePaneInGroup('s1','conv');
+    restoreForBrowsing(); // ← back to discovery mode
+    toast('💬  Conversation only — inbox & nav restored');
   }
   else{
     document.getElementById('layer1').classList.remove('active');
     document.getElementById('layer234').classList.add('active');
+    collapseForSession(); // ← entering session: collapse sidebar + inbox
 
     // Ensure video block is visible for states 2-4 (state 5 hides it)
     if(n !== 5){
@@ -1256,12 +1616,9 @@ function goToState(n){
       // Reset any previous swap
       state2Swapped = false;
       applyState2Layout();
-      document.getElementById('mbSub').textContent = '+1 (123) 456 78 90 · Auto Loans · 🎥 Video Active';
+      document.getElementById('mbSub').textContent = '+1 (123) 456 78 90';
       clearWFTab();
       setActivePaneInGroup('s234','conv');
-      // Hide co-browse tab — not relevant in pure Video + Conversation state
-      const cbTab = document.getElementById('wft-cobrowse');
-      if(cbTab) cbTab.style.display = 'none';
       toast('🎥  Video 35% · Conversation 65% — click ⇄ to swap proportions');
     }
     else if(n===3){
@@ -1270,7 +1627,7 @@ function goToState(n){
       const cbTab = document.getElementById('wft-cobrowse');
       if(cbTab) cbTab.style.display = '';
       resetSlots();
-      document.getElementById('mbSub').textContent = '+1 (123) 456 78 90 · Auto Loans · 🎥 Video · 🖥 Co-browse';
+      document.getElementById('mbSub').textContent = '+1 (123) 456 78 90';
       applySlots();
       activateTabHighlight('cobrowse');
       toast('🖥  Co-browse — use ⇄ in any panel header to swap layouts');
@@ -1281,10 +1638,10 @@ function goToState(n){
       const cbTab = document.getElementById('wft-cobrowse');
       if(cbTab) cbTab.style.display = '';
       resetSlots();
-      document.getElementById('mbSub').textContent = '+1 (123) 456 78 90 · Auto Loans · 🎥 Video · Workflows';
+      document.getElementById('mbSub').textContent = '+1 (123) 456 78 90';
       slots.right = 'cobrowse'; // same visual, just different tab highlight
       applySlots();
-      document.getElementById('mbSub').textContent = '+1 (123) 456 78 90 · Auto Loans · 🎥 Video · Workflows';
+      document.getElementById('mbSub').textContent = '+1 (123) 456 78 90';
       setActivePaneInGroup('s234','workflows');
       activateTabHighlight('workflows');
       toast('⚙  Switch tabs above — Co-browse, Workflows, Salesforce, Content Sharing');
@@ -1296,7 +1653,7 @@ function goToState(n){
       // Restore co-browse tab
       const cbTab5 = document.getElementById('wft-cobrowse');
       if(cbTab5) cbTab5.style.display = '';
-      document.getElementById('mbSub').textContent = '+1 (123) 456 78 90 · Auto Loans · 🖥 Co-browse';
+      document.getElementById('mbSub').textContent = '+1 (123) 456 78 90';
       applyState5Layout();
       activateTabHighlight('cobrowse');
       toast('🖥  Conversation 35% · Co-browse 65% — click ⇄ to swap proportions');
@@ -1330,7 +1687,7 @@ function sendMsg(listId, inputId){
   const tm=new Date().getHours()+':'+String(new Date().getMinutes()).padStart(2,'0');
   const b=document.createElement('div'); b.className='mb ag';
   b.style.animation='msgpop .18s ease';
-  b.innerHTML=`<div class="mav${isLg?' lg':''}" style="background:var(--accent)">AR</div><div class="mbody"><div class="mt${isLg?' lg':''}">${t}</div><div class="mm">${tm}</div></div>`;
+  b.innerHTML=`<div class="mav${isLg?' lg':''}" style="background:#7DA3F3;border-radius:50%;">AR</div><div class="mbody"><div class="mt${isLg?' lg':''}">${t}</div><div class="mm">${tm}</div></div>`;
   list.appendChild(b); list.scrollTop=list.scrollHeight; i.value='';
 }
 
@@ -1384,21 +1741,13 @@ setTimeout(()=>{
 function triggerStripAlert(name){
   const strip = document.getElementById('inboxStrip');
   const badge = document.getElementById('stripBadge');
-  const names = document.getElementById('stripNames');
 
-  // pulse the strip background
+  // pulse the strip pill
   strip.classList.add('alerting');
 
-  // show badge count
+  // show badge count only — no name chip
   badge.textContent = '1';
   badge.classList.add('show');
-
-  // add name chip
-  names.innerHTML = ''; // clear any previous
-  const chip = document.createElement('div');
-  chip.className = 'strip-name-chip';
-  chip.textContent = name;
-  names.appendChild(chip);
 }
 
 /* ══ MINI COMPOSER EXPAND ══ */
@@ -1596,6 +1945,31 @@ document.addEventListener('keydown',e=>{
     }
   });
 });
+
+/* ══ CONTACT INFO PANEL ══ */
+function toggleContactInfo(){
+  const panel = document.getElementById('ciPanel');
+  const btn   = document.getElementById('ciBtn');
+  const open  = panel.classList.toggle('open');
+  btn.classList.toggle('ci-active', open);
+  btn.title = open ? 'Close contact info' : 'Contact info';
+
+  // Opening contact info: collapse sidebar to icons to reclaim space
+  if(open){
+    const sb = document.getElementById('sidebar');
+    if(sb) sb.classList.remove('expanded');
+  }
+}
+
+/* ══ SIDEBAR TOGGLE ══ */
+function toggleSidebar(){
+  const sb = document.getElementById('sidebar');
+  sb.classList.toggle('expanded');
+}
+function setNavActive(el){
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
 
 // Init
 goToState(1);
